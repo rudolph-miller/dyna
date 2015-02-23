@@ -68,7 +68,6 @@
         finally (return result)))
 
 (defun parse-column (column)
-  (cond
-    ((string= (car column) "N")
-     (parse-integer (cdr column)))
-    (t (cdr column))))
+  (cond ((string= (car column) "N")
+         (parse-integer (cdr column)))
+        (t (cdr column))))
