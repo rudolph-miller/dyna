@@ -19,7 +19,7 @@
               (let ((result (progn ,@body)))
                 (if (null result)
                     "{}"
-                    (to-json result)))))))
+                    (to-json (cons :obj result))))))))
 
 (defun string-desc (str)
   `(:obj ("S" . ,str)))
@@ -75,26 +75,38 @@
 
 (defcontent describe-table () ())
 
-(defcontent get-item () ())
-
-(defcontent list-tables ()
-  nil)
-
-(defcontent put-item (&key table-name items condition-expression expression-attribute-values)
+(defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity)
   (unless (or table-name (dyna-table-name dyna))
     (error '<dyna-table-not-specified-error> :dyna dyna))
-  `(:obj ,@(append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
-                          `("Item" . (:obj ,@(mapcar #'(lambda (pair)
-                                                         (cons (car pair)
-                                                               (desc (cdr pair))))
-                                                     (plist-alist items)))))
-                   (when condition-expression
-                     (list `("ConditionExpression" . ,condition-expression)))
-                   (when expression-attribute-values
-                     (list `("ExpressionAttributeValues" . (:obj ,@(mapcar #'(lambda (pair)
-                                                                               (cons (car pair)
-                                                                                     (desc (cdr pair))))
-                                                                           (plist-alist expression-attribute-values)))))))))
+  (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
+                 `("Key" . (:obj ,@(mapcar #'(lambda (pair)
+                                               (cons (car pair)
+                                                     (desc (cdr pair))))
+                                           key))))
+          (when projection-expression
+            (list `("ProjectionExpression" . ,projection-expression)))
+          (when consistent-read
+            (list `("ConsistentRead" . ,consistent-read)))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
+
+(defcontent list-tables () nil)
+
+(defcontent put-item (&key table-name item condition-expression expression-attribute-values)
+  (unless (or table-name (dyna-table-name dyna))
+    (error '<dyna-table-not-specified-error> :dyna dyna))
+  (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
+                 `("Item" . (:obj ,@(mapcar #'(lambda (pair)
+                                                (cons (car pair)
+                                                      (desc (cdr pair))))
+                                            item))))
+          (when condition-expression
+            (list `("ConditionExpression" . ,condition-expression)))
+          (when expression-attribute-values
+            (list `("ExpressionAttributeValues" . (:obj ,@(mapcar #'(lambda (pair)
+                                                                      (cons (car pair)
+                                                                            (desc (cdr pair))))
+                                                                  expression-attribute-values)))))))
 
 (defcontent query () ())
 

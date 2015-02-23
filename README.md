@@ -6,6 +6,30 @@
 
 ## Supporting
 
+- batch-get-item
+
+- batch-write-item
+
+- create-table
+
+- delete-item
+
+- delete-table
+
+- describe-table
+
+- get-item
+  - returns the alist of item.
+  - Supported
+    - `:table-name`
+    - `:key`
+    - `:projection-expression`
+    - `:consistent-read`
+    - `:return-consumed-capacity`
+  - Unsupported
+    - `:returnItem-collection-metrics`
+    - `:return-vlaues`
+
 - ListTables
   - returns a list of table names.
 
@@ -13,7 +37,7 @@
   - returns t if the operation succeeded.
   - Supported
     - `:table-name`
-    - `:items`
+    - `:item`
     - `:on-expression`
     - `:expression-attribute-values`
   - Unsupported
@@ -21,6 +45,15 @@
     - `:return-consumed-capacity`
     - `:return-item-collection-metrics`
     - `:return-values`
+
+
+- query
+
+- scan
+
+- update-item
+
+- update-table
 
 ## Author
 

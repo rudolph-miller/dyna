@@ -32,26 +32,35 @@
     (skip 1 "No tests written."))
 
   (subtest "get-item"
-    (skip 1 "No tests written."))
+    (is (get-item-content dyna :table-name "Thread"
+                               :key '(("Tags" . ("Multiple Items" "HelpMe")))
+                               :consistent-read t
+                               :return-consumed-capacity "TOTAL")
+        (format nil "{~{~a~^,~}}"
+                (list "\"TableName\":\"Thread\""
+                      "\"Key\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]}}"
+                      "\"ConsistentRead\":true"
+                      "\"ReturnConsumedCapacity\":\"TOTAL\""))
+        "can return the correct JSON object."))
 
   (subtest "list-tables"
     (is (list-tables-content dyna)
         "{}"
-        "can return correct JSON object."))
+        "can return the correct JSON object."))
 
-  (subtest "defcontent put-item"
+  (subtest "put-item"
     (is (put-item-content dyna :table-name "Thread"
-                               :items '("Tags" ("Multiple Items" "HelpMe")
-                                        "ForumName" "Amazon DynamoDB")
+                               :item '(("Tags" . ("Multiple Items" "HelpMe"))
+                                       ("ForumName" . "Amazon DynamoDB"))
                                :condition-expression "ForumName <> :f and Subject <> :s"
-                               :expression-attribute-values '(":f" "Amazon DynamoDB"
-                                                              ":s" "update multiple items"))
+                               :expression-attribute-values '((":f" . "Amazon DynamoDB")
+                                                              (":s" . "update multiple items")))
         (format nil "{~{~a~^,~}}"
                 (list "\"TableName\":\"Thread\""
                       "\"Item\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]},\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
                       "\"ConditionExpression\":\"ForumName <> :f and Subject <> :s\""
                       "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"update multiple items\"}}"))
-        "can return correct JSON object."))
+        "can return the correct JSON object."))
 
   (subtest "query"
     (skip 1 "No tests written."))

@@ -39,7 +39,7 @@
                                                                content)
                 (cond
                   ((= status 200)
-                   (let ((*result* (cdr (parse (octets-to-string result)))))
+                   (let ((*result* (parse (octets-to-string result))))
                      ,@body))
                   (t (error '<dyna-request-error> :message (octets-to-string result) :meta meta))))))))
 
@@ -58,10 +58,11 @@
 
 (defoperation describe-table)
 
-(defoperation get-item)
+(defoperation get-item
+  (values (parse-result-item (val *result* "Item")) *result*))
 
 (defoperation list-tables
-  (values (get-values "TableNames" *result*) *result*))
+  (values (val *result* "TableNames") *result*))
 
 (defoperation put-item t)
 

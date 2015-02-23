@@ -13,7 +13,9 @@
                 :usb8-array-to-base64-string)
   (:import-from :local-time
                 :format-timestring
-                :now))
+                :now)
+  (:import-from :alexandria
+                :make-keyword))
 (in-package :dyna.util)
 
 (syntax:use-syntax :annot)
@@ -59,5 +61,14 @@
                   (string< (to-s (car a)) (to-s (car b)))))))
 
 @export
-(defun get-values (key alist)
-  (cdr (assoc key alist :test #'equal)))
+(defun parse-result-item (item)
+  (loop with result
+        for slot in (cdr item)
+        do (push (cons (car slot) (parse-column (caddr slot))) result)
+        finally (return result)))
+
+(defun parse-column (column)
+  (cond
+    ((string= (car column) "N")
+     (parse-integer (cdr column)))
+    (t (cdr column))))
