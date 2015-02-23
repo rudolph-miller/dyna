@@ -15,7 +15,9 @@
                 :format-timestring
                 :now)
   (:import-from :alexandria
-                :make-keyword))
+                :make-keyword)
+  (:import-from :jsown
+                :do-json-keys))
 (in-package :dyna.util)
 
 (syntax:use-syntax :annot)
@@ -52,7 +54,7 @@
     (hmac-digest hmac)))
 
 @export
-(defun alist-sort (lst)
+(defun sort-alist (lst)
   (flet  ((to-s (s)
             (etypecase s
               (symbol (symbol-name s))
@@ -62,10 +64,10 @@
 
 @export
 (defun parse-result-item (item)
-  (loop with result
-        for slot in (cdr item)
-        do (push (cons (car slot) (parse-column (caddr slot))) result)
-        finally (return result)))
+  (let ((result))
+    (do-json-keys (key val) item
+      (push (cons key (parse-column (cadr val))) result))
+    result))
 
 (defun parse-column (column)
   (cond ((string= (car column) "N")

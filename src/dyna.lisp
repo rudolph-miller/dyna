@@ -49,7 +49,8 @@
 
 (defoperation batch-write-item)
 
-(defoperation create-table)
+(defoperation create-table
+  (values t *result*))
 
 (defoperation delete-item
   (values t *result*))

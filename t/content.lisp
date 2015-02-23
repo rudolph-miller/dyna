@@ -20,7 +20,83 @@
     (skip 1 "No tests written."))
 
   (subtest "create-table"
-    (skip 1 "No tests written."))
+    (is-error (create-table-content dyna :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))
+                                                       (("AttributeName" . "Subject") ("KeyType" . "RANGE")))
+                                         :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                         :local-secondary-indexes '((("IndexName" . "LastPostIndex")
+                                                                     ("KeySchema" . ((("AttributeName" . "ForumName")
+                                                                                      ("KeyType" . "HASH"))
+                                                                                     (("AttributeName" . "LastPostDateTime")
+                                                                                      ("KeyType" . "RANGE"))))
+                                                                     ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                         :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                                   ("WriteCapacityUnits" . 5)))
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :table-name.")
+    (is-error (create-table-content dyna :table-name "Thread"
+                                         :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))
+                                                       (("AttributeName" . "Subject") ("KeyType" . "RANGE")))
+                                         :local-secondary-indexes '((("IndexName" . "LastPostIndex")
+                                                                     ("KeySchema" . ((("AttributeName" . "ForumName")
+                                                                                      ("KeyType" . "HASH"))
+                                                                                     (("AttributeName" . "LastPostDateTime")
+                                                                                      ("KeyType" . "RANGE"))))
+                                                                     ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                         :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                                   ("WriteCapacityUnits" . 5)))
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :attribute-definitions.")
+    (is-error (create-table-content dyna :table-name "Thread"
+                                         :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                         :local-secondary-indexes '((("IndexName" . "LastPostIndex")
+                                                                     ("KeySchema" . ((("AttributeName" . "ForumName")
+                                                                                      ("KeyType" . "HASH"))
+                                                                                     (("AttributeName" . "LastPostDateTime")
+                                                                                      ("KeyType" . "RANGE"))))
+                                                                     ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                         :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                                   ("WriteCapacityUnits" . 5)))
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :key-schema.")
+    (is-error (create-table-content dyna :table-name "Thread"
+                                         :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))
+                                                       (("AttributeName" . "Subject") ("KeyType" . "RANGE")))
+                                         :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                         :local-secondary-indexes '((("IndexName" . "LastPostIndex")
+                                                                     ("KeySchema" . ((("AttributeName" . "ForumName")
+                                                                                      ("KeyType" . "HASH"))
+                                                                                     (("AttributeName" . "LastPostDateTime")
+                                                                                      ("KeyType" . "RANGE")))))
+                                                                    ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :provisioned-throughput.")
+    (is (create-table-content dyna :table-name "Thread"
+                                   :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))
+                                                 (("AttributeName" . "Subject") ("KeyType" . "RANGE")))
+                                   :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                            (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                            (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                   :local-secondary-indexes '((("IndexName" . "LastPostIndex")
+                                                               ("KeySchema" . ((("AttributeName" . "ForumName")
+                                                                                ("KeyType" . "HASH"))
+                                                                               (("AttributeName" . "LastPostDateTime")
+                                                                                ("KeyType" . "RANGE"))))
+                                                               ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                   :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                             ("WriteCapacityUnits" . 5)))
+        (format nil "{~{~a~^,~}}"
+                (list "\"TableName\":\"Thread\""
+                      "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"
+                      "\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"Subject\",\"KeyType\":\"RANGE\"}]"
+                      "\"LocalSecondaryIndexes\":[{\"IndexName\":\"LastPostIndex\",\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"LastPostDateTime\",\"KeyType\":\"RANGE\"}],\"Projection\":{\"ProjectionType\":\"KEYS_ONLY\"}}]"
+                      "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}"))
+        "can return the correct JSON object."))
 
   (subtest "delete-item"
     (is-error (delete-item-content dyna :key '(("ForumName" . "Amazon DynamoDB")))
@@ -39,7 +115,7 @@
                       "\"ReturnValues\":\"ALL_OLD\""
                       "\"ConditionExpression\":\"attribute_not_exists(Replies)\""))
         "can return the correct JSON object."))
-  
+
 
   (subtest "delete-table"
     (is-error (delete-table-content dyna)

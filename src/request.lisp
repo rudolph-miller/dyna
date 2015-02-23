@@ -62,7 +62,7 @@
                             (etypecase (cdr pair)
                               ((or symbol function) (funcall (cdr pair) request))
                               (string (cdr pair)))))
-                  (alist-sort (request-signed-headers request)))))
+                  (sort-alist (request-signed-headers request)))))
 
 @export
 (defun request-hashed-payload (request)

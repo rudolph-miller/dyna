@@ -68,16 +68,46 @@
     (boolean (bool-desc object))
     (number (number-desc object))
     (string (string-desc object))
-    (cons
-     (if (every #'numberp object)
-         (number-set-desc object)
-         (string-set-desc object)))))
+    (cons (if (every #'numberp object)
+              (number-set-desc object)
+              (string-set-desc object)))))
 
 (defcontent batch-get-item () ())
 
 (defcontent batch-write-item () ())
 
-(defcontent create-table () ())
+(defcontent create-table (&key table-name attribute-definitions key-schema global-secondary-indexes
+                               local-secondary-indexes provisioned-throughput)
+    (table-name attribute-definitions key-schema provisioned-throughput)
+  (flet ((index-mapper (lst)
+           (mapcar #'(lambda (index)
+                        (cons :obj
+                              (mapcar #'(lambda (item)
+                                          (cond
+                                            ((string= (car item) "Projection")
+                                             (cons (car item)
+                                                   (list :obj (cdr item))))
+                                            ((string= (car item) "KeySchema")
+                                             (cons (car item)
+                                                   (mapcar #'(lambda (item)
+                                                               (cons :obj item))
+                                                           (cdr item))))
+                                            (t item)))
+                                      index)))
+                    lst)))
+    (append (list  `("TableName" . ,table-name)
+                   `("AttributeDefinitions" . ,(mapcar #'(lambda (item)
+                                                           (cons :obj item))
+                                                       attribute-definitions))
+                   `("KeySchema" . ,(mapcar #'(lambda (item)
+                                                (cons :obj item))
+                                            key-schema))
+                   `("LocalSecondaryIndexes" . ,(index-mapper local-secondary-indexes)))
+            (when provisioned-throughput
+              (list `("ProvisionedThroughput" . (:obj ,@provisioned-throughput))))
+            (when global-secondary-indexes
+              (list `("GlobalSecodaryIndexes" . ,(index-mapper global-secondary-indexes)))))))
+
 
 (defcontent delete-item (&key table-name key condition-expression return-values)
     (table-name key)
