@@ -10,6 +10,17 @@
   - returns a list of table names.
 
 - PutItem
+  - returns t if the operation succeeded.
+  - Supported
+    - `:table-name`
+    - `:items`
+    - `:on-expression`
+    - `:expression-attribute-values`
+  - Unsupported
+    - `:expression-attribute-names`
+    - `:return-consumed-capacity`
+    - `:return-item-collection-metrics`
+    - `:return-values`
 
 ## Author
 
