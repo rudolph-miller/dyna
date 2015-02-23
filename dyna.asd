@@ -27,9 +27,10 @@
                :local-time)
   :components ((:module "src"
                 :components
-                ((:file "dyna" :depends-on ("request"))
+                ((:file "dyna" :depends-on ("fetch"))
                  (:file "util")
-                 (:file "request" :depends-on ("util")))))
+                 (:file "request" :depends-on ("util"))
+                 (:file "fetch" :depends-on ("request")))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames

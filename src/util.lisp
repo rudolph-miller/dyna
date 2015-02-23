@@ -48,3 +48,12 @@
   (let ((hmac (make-hmac (to-octets key) :sha256)))
     (update-hmac hmac (to-octets str))
     (hmac-digest hmac)))
+
+@export
+(defun alist-sort (lst)
+  (flet  ((to-s (s)
+            (etypecase s
+              (symbol (symbol-name s))
+              (string s))))
+    (sort lst #'(lambda (a b)
+                  (string< (to-s (car a)) (to-s (car b)))))))

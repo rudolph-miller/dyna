@@ -14,26 +14,20 @@
 
 @export
 @export-accessors
-(defstruct (request (:constructor %make-request))
+(defstruct request
   (method "POST")
   (credentials)
   (region "us-east-1")
   (service)
   (endpoint)
   (content-type "application/x-amz-json-1.0")
-  (%signed-headers `((content-type . ,#'request-content-type)
+  (signed-headers `((content-type . ,#'request-content-type)
                     (host . ,#'request-host)
                     (x-amz-date . ,#'request-x-amz-date)))
   (canonical-uri "/")
   (query-string "")
   (target "")
-  (content))
-
-@export
-(defun make-request (&rest initargs &key method credentials region service endpoint content-type signed-headers content)
-  (declare (ignore method credentials region service endpoint content-type signed-headers content))
-  (apply #'%make-request (append (when (getf initargs :signed-headers) (list :%signed-headers (getf initargs :signed-headers)))
-                                initargs)))
+  (content ""))
 
 @export
 (defun request-access-key (request)
@@ -62,16 +56,18 @@
   (request-target request))
 
 @export
-(defun request-signed-headers (request)
-  (format nil "~(~{~a~^;~}~)" (mapcar #'car (request-%signed-headers request))))
+(defun %request-signed-headers (request)
+  (format nil "~(~{~a~^;~}~)" (mapcar #'car (request-signed-headers request))))
 
 @export
 (defun request-canonical-header (request)
   (format nil "~{~(~a~):~a~%~}"
           (mapcan #'(lambda (pair)
                       (list (car pair)
-                            (funcall (cdr pair) request)))
-                  (request-%signed-headers request))))
+                            (etypecase (cdr pair)
+                              ((or symbol function) (funcall (cdr pair) request))
+                              (string (cdr pair)))))
+                  (alist-sort (request-signed-headers request)))))
 
 @export
 (defun request-hashed-payload (request)
@@ -80,11 +76,11 @@
 @export
 (defun request-canonical-request (request)
   (format nil "~{~a~^~%~}"
-          (list (request-method request)
+          (list (string-upcase (request-method request))
                 (request-canonical-uri request)
                 (request-query-string request)
                 (request-canonical-header request)
-                (request-signed-headers request)
+                (%request-signed-headers request)
                 (request-hashed-payload request))))
 
 @export
@@ -135,5 +131,5 @@
   (format nil "~a ~{~a=~a~^, ~}"
           "AWS4-HMAC-SHA256"
           (list "Credential" (request-credential request)
-                "SignedHeaders" (request-signed-headers request)
+                "SignedHeaders" (%request-signed-headers request)
                 "Signature" (request-signature request))))

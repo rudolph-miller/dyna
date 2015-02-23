@@ -1,12 +1,14 @@
 (in-package :cl-user)
 (defpackage dyna-test.request
   (:use :cl
-   :prove
-        :dyna-test.util
-   :dyna.request))
+        :prove
+        :dyna-test.init
+        :dyna.request))
 (in-package :dyna-test.request)
 
 (plan nil)
+
+(diag "dyna-test.request")
 
 (with-stub-now (make-clock :year 2011 :month 09 :day 09 :hour 23 :minute 36 :sec 00)
   (let ((request (make-request :method "POST"

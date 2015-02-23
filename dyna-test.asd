@@ -18,7 +18,8 @@
                 :components
                 ((:file "init")
                  (:test-file "dyna")
-                 (:test-file "request"))))
+                 (:test-file "request")
+                 (:test-file "fetch")))
 
   :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)

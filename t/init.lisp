@@ -1,12 +1,12 @@
 (in-package :cl-user)
-(defpackage dyna-test.util
+(defpackage dyna-test.init
   (:use :cl)
   (:import-from :local-time
                 :parse-timestring
                 :*default-timezone*
                 :+utc-zone+)
   (:export :make-clock))
-(in-package :dyna-test.util)
+(in-package :dyna-test.init)
 
 (syntax:use-syntax :annot)
 
