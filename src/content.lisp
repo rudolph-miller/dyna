@@ -73,7 +73,10 @@
 
 (defcontent delete-table () ())
 
-(defcontent describe-table () ())
+(defcontent describe-table (&key table-name)
+  (unless (or table-name (dyna-table-name dyna))
+    (error '<dyna-table-not-specified-error> :dyna dyna))
+  `(("TableName" . ,(or table-name (dyna-table-name dyna)))))
 
 (defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity)
   (unless (or table-name (dyna-table-name dyna))

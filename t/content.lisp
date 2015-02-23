@@ -3,6 +3,7 @@
   (:use :cl
         :prove
         :dyna
+        :dyna.error
         :dyna.content))
 (in-package :dyna-test.content)
 
@@ -10,8 +11,7 @@
 
 (diag "dyna-test.content")
 
-(let ((dyna (make-dyna :credentials '("AKIDEXAMPLE" . "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY")
-                       :table-name "sample")))
+(let ((dyna (make-dyna :credentials '("AKIDEXAMPLE" . "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"))))
 
   (subtest "batch-get-item"
     (skip 1 "No tests written."))
@@ -29,9 +29,17 @@
     (skip 1 "No tests written."))
 
   (subtest "describe-table"
-    (skip 1 "No tests written."))
+    (is-error (describe-table-content dyna)
+              '<dyna-table-not-specified-error>
+              "can raise the error without table-name.")
+    (is (describe-table-content dyna :table-name "Thread")
+        "{\"TableName\":\"Thread\"}"
+        "can return the correct JSON object."))
 
   (subtest "get-item"
+    (is-error (get-item-content dyna)
+              '<dyna-table-not-specified-error>
+              "can raise the error without table-name.")
     (is (get-item-content dyna :table-name "Thread"
                                :key '(("Tags" . ("Multiple Items" "HelpMe")))
                                :consistent-read t
@@ -49,6 +57,9 @@
         "can return the correct JSON object."))
 
   (subtest "put-item"
+    (is-error (put-item-content dyna)
+              '<dyna-table-not-specified-error>
+              "can raise the error without table-name.")
     (is (put-item-content dyna :table-name "Thread"
                                :item '(("Tags" . ("Multiple Items" "HelpMe"))
                                        ("ForumName" . "Amazon DynamoDB"))

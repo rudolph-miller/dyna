@@ -56,7 +56,8 @@
 
 (defoperation delete-table)
 
-(defoperation describe-table)
+(defoperation describe-table
+  *result*)
 
 (defoperation get-item
   (values (parse-result-item (val *result* "Item")) *result*))

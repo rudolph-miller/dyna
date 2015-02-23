@@ -4,7 +4,7 @@
 
 ## Installation
 
-## Supporting
+## Support
 
 - batch-get-item
 
@@ -17,16 +17,19 @@
 - delete-table
 
 - describe-table
+  - returns the jsown object of table description.
+  - Support
+    - `:table-name`
 
 - get-item
   - returns the alist of item.
-  - Supported
+  - Support
     - `:table-name`
     - `:key`
     - `:projection-expression`
     - `:consistent-read`
     - `:return-consumed-capacity`
-  - Unsupported
+  - Unsupport
     - `:returnItem-collection-metrics`
     - `:return-vlaues`
 
@@ -35,12 +38,12 @@
 
 - PutItem
   - returns t if the operation succeeded.
-  - Supported
+  - Support
     - `:table-name`
     - `:item`
     - `:on-expression`
     - `:expression-attribute-values`
-  - Unsupported
+  - Unsupport
     - `:expression-attribute-names`
     - `:return-consumed-capacity`
     - `:return-item-collection-metrics`
