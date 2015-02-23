@@ -20,10 +20,10 @@
              (slot-value condition 'meta)))))
 
 @export
-(define-condition <dyna-table-not-specified-error> (<dyna-error>)
-  ((dyna :initarg :dyna))
+(define-condition <dyna-incomplete-argumet-error> (<dyna-error>)
+  ((args :initarg :args))
   (:report
    (lambda (condition stream)
      (format stream
-             "Table not specified with ~a."
-             (slot-value condition 'dyna)))))
+             "You must complete ~{:~a~^,~}."
+             (slot-value condition 'args)))))

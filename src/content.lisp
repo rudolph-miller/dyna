@@ -6,16 +6,26 @@
         :dyna.error
         :dyna)
   (:import-from :alexandria
-                :plist-alist))
+                :plist-alist
+                :make-keyword))
 (in-package :dyna.content)
 
 (syntax:use-syntax :annot)
 
-(defmacro defcontent (name lst &body body)
+(defun check-incomplete (args must)
+  (loop with result
+        for arg in must
+        unless (getf args (make-keyword arg))
+          do (push arg result)
+        finally (unless (null result)
+                  (error '<dyna-incomplete-argumet-error> :args result))))
+
+(defmacro defcontent (name lst must &body body)
   (let ((content-symbol (intern (format nil "~a-CONTENT" name))))
     `(progn (export ',content-symbol)
-            (defun ,content-symbol (dyna ,@lst)
+            (defun ,content-symbol (dyna &rest args ,@lst)
               (declare (ignorable dyna))
+              (check-incomplete args ',must)
               (let ((result (progn ,@body)))
                 (if (null result)
                     "{}"
@@ -69,18 +79,26 @@
 
 (defcontent create-table () ())
 
-(defcontent delete-item () ())
+(defcontent delete-item (&key table-name key condition-expression return-values)
+  (table-name key)
+  (append (list  `("TableName" . ,table-name)
+                 `("Key" . (:obj ,@(mapcar #'(lambda (pair)
+                                                (cons (car pair)
+                                                      (desc (cdr pair))))
+                                           key))))
+          (when return-values
+            (list `("ReturnValues" . ,return-values)))
+          (when condition-expression
+            (list `("ConditionExpression" . ,condition-expression)))))
 
 (defcontent delete-table () ())
 
 (defcontent describe-table (&key table-name)
-  (unless (or table-name (dyna-table-name dyna))
-    (error '<dyna-table-not-specified-error> :dyna dyna))
-  `(("TableName" . ,(or table-name (dyna-table-name dyna)))))
+  (table-name)
+  `(("TableName" . ,table-name)))
 
 (defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity)
-  (unless (or table-name (dyna-table-name dyna))
-    (error '<dyna-table-not-specified-error> :dyna dyna))
+  (table-name key)
   (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
                  `("Key" . (:obj ,@(mapcar #'(lambda (pair)
                                                (cons (car pair)
@@ -96,8 +114,7 @@
 (defcontent list-tables () nil)
 
 (defcontent put-item (&key table-name item condition-expression expression-attribute-values)
-  (unless (or table-name (dyna-table-name dyna))
-    (error '<dyna-table-not-specified-error> :dyna dyna))
+  (table-name item)
   (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
                  `("Item" . (:obj ,@(mapcar #'(lambda (pair)
                                                 (cons (car pair)

@@ -22,7 +22,6 @@
 @export-accessors
 (defstruct dyna
   (credentials)
-  (table-name)
   (region "us-east-1"))
 
 (defmacro defoperation (operation &body body)
@@ -52,7 +51,8 @@
 
 (defoperation create-table)
 
-(defoperation delete-item)
+(defoperation delete-item
+  (values t *result*))
 
 (defoperation delete-table)
 
@@ -65,7 +65,8 @@
 (defoperation list-tables
   (values (val *result* "TableNames") *result*))
 
-(defoperation put-item t)
+(defoperation put-item
+  (values t *result*))
 
 (defoperation query)
 
