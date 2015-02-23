@@ -18,10 +18,18 @@
   :version "0.1"
   :author "Rudolph-Miller"
   :license "MIT"
-  :depends-on ()
+  :depends-on (:cl-syntax-annot
+               :drakma
+               :ironclad
+               :flexi-streams
+               :cl-base64
+               :quri
+               :local-time)
   :components ((:module "src"
                 :components
-                ((:file "dyna"))))
+                ((:file "dyna" :depends-on ("request"))
+                 (:file "util")
+                 (:file "request" :depends-on ("util")))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames

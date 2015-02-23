@@ -1,6 +1,6 @@
 (in-package :cl-user)
 (defpackage dyna
-  (:use :cl))
+  (:use :cl
+        :dyna.request))
 (in-package :dyna)
 
-;; blah blah blah.

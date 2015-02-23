@@ -12,10 +12,13 @@
   :author "Rudolph-Miller"
   :license "MIT"
   :depends-on (:dyna
-               :prove)
+               :prove
+               :local-time)
   :components ((:module "t"
                 :components
-                ((:test-file "dyna"))))
+                ((:file "init")
+                 (:test-file "dyna")
+                 (:test-file "request"))))
 
   :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)
