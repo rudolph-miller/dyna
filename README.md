@@ -1,8 +1,18 @@
-# Dyna - Common Lisp library for AWS DynamoDB.
+# Dyna
+Dyna is a Common Lisp library for AWS DynamoDB.
 
 ## Usage
 
-## Installation
+```Lisp
+
+(let ((dyna (make-dyna :credentials (cons (asdf::getenv "AWS_ACCESS_KEY") (asdf:getenv "AWS_SECRET_KEY"))
+                 :region "ap-northeast-1)))
+  (put-item dyna :table-name "aliens" :item (("Name" . "LispAlien") ("Age" . 57) ("Feature" . "They talk Lisp.")))
+  ;; => T
+
+  (get-item dyna :table-name "aliens" :key (("Name" . "LispAlien"))))
+  ;; => (("Name" . "LispAlien") ("Age" . 57) ("Feature" . "They talk Lisp."))
+```
 
 ## Support
 
