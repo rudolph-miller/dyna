@@ -26,7 +26,6 @@
                     (x-amz-date . ,#'request-x-amz-date)))
   (canonical-uri "/")
   (query-string "")
-  (target "")
   (content ""))
 
 @export
@@ -50,10 +49,6 @@
 (defun request-content-length (request)
   (etypecase (request-content request)
     ((or vector string) (length (request-content request)))))
-
-@export
-(defun request-x-amz-target (request)
-  (request-target request))
 
 @export
 (defun %request-signed-headers (request)

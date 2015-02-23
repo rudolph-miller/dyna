@@ -57,3 +57,7 @@
               (string s))))
     (sort lst #'(lambda (a b)
                   (string< (to-s (car a)) (to-s (car b)))))))
+
+@export
+(defun get-values (key alist)
+  (cdr (assoc key alist :test #'equal)))

@@ -24,13 +24,18 @@
                :flexi-streams
                :cl-base64
                :quri
-               :local-time)
+               :local-time
+               :jsown
+               :split-sequence
+               :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "dyna" :depends-on ("fetch"))
+                ((:file "dyna" :depends-on ("fetch" "error" "content"))
+                 (:file "error")
                  (:file "util")
                  (:file "request" :depends-on ("util"))
-                 (:file "fetch" :depends-on ("request")))
+                 (:file "fetch" :depends-on ("request"))
+                 (:file "content"))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames
