@@ -54,7 +54,8 @@
 (defoperation delete-item
   (values t *result*))
 
-(defoperation delete-table)
+(defoperation delete-table
+  (values t *result*))
 
 (defoperation describe-table
   *result*)

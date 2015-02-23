@@ -80,25 +80,27 @@
 (defcontent create-table () ())
 
 (defcontent delete-item (&key table-name key condition-expression return-values)
-  (table-name key)
+    (table-name key)
   (append (list  `("TableName" . ,table-name)
                  `("Key" . (:obj ,@(mapcar #'(lambda (pair)
-                                                (cons (car pair)
-                                                      (desc (cdr pair))))
+                                               (cons (car pair)
+                                                     (desc (cdr pair))))
                                            key))))
           (when return-values
             (list `("ReturnValues" . ,return-values)))
           (when condition-expression
             (list `("ConditionExpression" . ,condition-expression)))))
 
-(defcontent delete-table () ())
+(defcontent delete-table (&key table-name)
+    (table-name)
+  `(("TableName" . ,table-name)))
 
 (defcontent describe-table (&key table-name)
-  (table-name)
+    (table-name)
   `(("TableName" . ,table-name)))
 
 (defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity)
-  (table-name key)
+    (table-name key)
   (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
                  `("Key" . (:obj ,@(mapcar #'(lambda (pair)
                                                (cons (car pair)
@@ -114,7 +116,7 @@
 (defcontent list-tables () nil)
 
 (defcontent put-item (&key table-name item condition-expression expression-attribute-values)
-  (table-name item)
+    (table-name item)
   (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
                  `("Item" . (:obj ,@(mapcar #'(lambda (pair)
                                                 (cons (car pair)

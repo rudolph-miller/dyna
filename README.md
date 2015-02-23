@@ -33,6 +33,9 @@ Dyna is a Common Lisp library for AWS DynamoDB.
     - `:return-values`
 
 - delete-table
+  - returns t if the operation succeeded.
+  - SUpport
+    - `:table-name`
 
 - describe-table
   - returns the jsown object of table description.

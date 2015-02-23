@@ -42,7 +42,12 @@
   
 
   (subtest "delete-table"
-    (skip 1 "No tests written."))
+    (is-error (delete-table-content dyna)
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :table-name.")
+    (is (delete-table-content dyna :table-name "Thread")
+        "{\"TableName\":\"Thread\"}"
+        "can return the correct JSON object."))
 
   (subtest "describe-table"
     (is-error (describe-table-content dyna)
