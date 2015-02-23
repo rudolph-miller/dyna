@@ -33,7 +33,6 @@
                                           (find-package :dyna.content))
                                   dyna
                                   args)))
-              (print content)
               (multiple-value-bind (result status meta) (fetch (dyna-credentials dyna)
                                                                (dyna-region dyna)
                                                                op
@@ -64,7 +63,7 @@
 (defoperation list-tables
   (values (get-values "TableNames" *result*) *result*))
 
-(defoperation put-item)
+(defoperation put-item t)
 
 (defoperation query)
 

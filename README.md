@@ -4,6 +4,13 @@
 
 ## Installation
 
+## Supporting
+
+- ListTables
+  - returns a list of table names.
+
+- PutItem
+
 ## Author
 
 * Rudolph-Miller (chopsticks.tk.ppfm@gmail.com)
