@@ -45,7 +45,24 @@
                        index)))
           lst))
 
-(defcontent batch-get-item () ())
+(defcontent batch-get-item (&key request-items return-consumed-capacity)
+    (request-items)
+  (append (list `("RequestItems" . ,(add-obj-to-list
+                                     (mapcar #'(lambda (table)
+                                                 (cons (car table)
+                                                       (add-obj-to-list
+                                                        (mapcar #'(lambda (props)
+                                                                    (cons (car props)
+                                                                          (if (string= (car props) "Keys")
+                                                                              (build-obj-list
+                                                                               (mapcar #'(lambda (item)
+                                                                                           (build-desc-list item))
+                                                                                       (cdr props)))
+                                                                              (cdr props))))
+                                                                (cdr table)))))
+                                             request-items))))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
 (defcontent batch-write-item () ())
 

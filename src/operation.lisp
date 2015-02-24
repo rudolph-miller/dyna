@@ -35,7 +35,17 @@
                                                   :message (octets-to-string result)
                                                   :meta meta))))))))
 
-(defoperation batch-get-item)
+(defoperation batch-get-item
+  (values (let ((result))
+            (do-json-keys (key val)
+                          (val *result* "Responses")
+              (push (cons key
+                          (mapcar #'(lambda (item)
+                                      (parse-result-item item))
+                                  val))
+                    result))
+            result)
+          *result*))
 
 (defoperation batch-write-item)
 

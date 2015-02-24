@@ -15,7 +15,20 @@
 (let ((dyna (make-dyna :credentials '("AKIDEXAMPLE" . "wJalrXUtnFEMI/K7MDENG+bPxRfiCYEXAMPLEKEY"))))
 
   (subtest "batch-get-item"
-    (skip 1 "No tests written."))
+    (is-error (batch-get-item-content dyna :return-consumed-capacity "TOTAL")
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :request-items.")
+    (is (batch-get-item-content dyna :request-items '(("Forum" . (("Keys" . ((("Name" . "Amazon DynamoDB"))
+                                                                             (("Name" . "Amazon RDS"))
+                                                                             (("Name" . "Amazon Redshift"))))
+                                                                  ("ProjectionExpression" . "Id, ISBN, Title, Authors")))
+                                                      ("Thread" . (("Keys" . ((("ForumName" . "Amazon DynamoDB")
+                                                                               ("Subject" . "Concurrent reads"))))
+                                                                   ("AttributesToGet" . "ForumName,Subject"))))
+                                     :return-consumed-capacity "TOTAL")
+        (build-json "\"RequestItems\":{\"Forum\":{\"Keys\":[{\"Name\":{\"S\":\"Amazon DynamoDB\"}},{\"Name\":{\"S\":\"Amazon RDS\"}},{\"Name\":{\"S\":\"Amazon Redshift\"}}],\"ProjectionExpression\":\"Id, ISBN, Title, Authors\"},\"Thread\":{\"Keys\":[{\"ForumName\":{\"S\":\"Amazon DynamoDB\"},\"Subject\":{\"S\":\"Concurrent reads\"}}],\"AttributesToGet\":\"ForumName,Subject\"}}"
+                    "\"ReturnConsumedCapacity\":\"TOTAL\"")
+        "can return the correct JSON object."))
 
   (subtest "batch-write-item"
     (skip 1 "No tests written."))
@@ -181,15 +194,15 @@
 
   (subtest "update-item"
     (is-error (update-item-content dyna :key '(("ForumName" . "Amazon DynamoDB"))
-                                :update-expression "set Replies = Replies + :num"
-                                :expression-attribute-values '((":num" . 1))
-                                :return-values "NONE")
+                                        :update-expression "set Replies = Replies + :num"
+                                        :expression-attribute-values '((":num" . 1))
+                                        :return-values "NONE")
               '<dyna-incomplete-argumet-error>
               "can raise the error without :table-name.")
     (is-error (update-item-content dyna :table-name "Thread"
-                                :update-expression "set Replies = Replies + :num"
-                                :expression-attribute-values '((":num" . 1))
-                                :return-values "NONE")
+                                        :update-expression "set Replies = Replies + :num"
+                                        :expression-attribute-values '((":num" . 1))
+                                        :return-values "NONE")
               '<dyna-incomplete-argumet-error>
               "can raise the error without :key.")
     (is (update-item-content dyna :table-name "Thread"

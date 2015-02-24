@@ -12,6 +12,8 @@
   (:import-from :cl-base64
                 :usb8-array-to-base64-string)
   (:import-from :local-time
+                :*default-timezone*
+                :+utc-zone+
                 :format-timestring
                 :now)
   (:import-from :alexandria
@@ -20,7 +22,9 @@
                 :split-sequence)
   (:import-from :jsown
                 :new-js
-                :do-json-keys))
+                :do-json-keys)
+  (:import-from :dyna.desc
+                :desc))
 (in-package :dyna.util)
 
 (syntax:use-syntax :annot)
@@ -37,13 +41,15 @@
 
 @export
 (defun timestamp ()
-  (format-timestring nil (now)
-                     :format '(:year (:month 2 #\0) (:day 2 #\0) "T" (:hour 2 #\0) (:min 2 #\0) (:sec 2 #\0) "Z")))
+  (let ((*default-timezone* +utc-zone+))
+    (format-timestring nil (now)
+                       :format '(:year (:month 2 #\0) (:day 2 #\0) "T" (:hour 2 #\0) (:min 2 #\0) (:sec 2 #\0) "Z"))))
 
 @export
 (defun datestamp ()
-  (format-timestring nil (now)
-                     :format '(:year (:month 2 #\0) (:day 2 #\0))))
+  (let ((*default-timezone* +utc-zone+))
+    (format-timestring nil (now)
+                       :format '(:year (:month 2 #\0) (:day 2 #\0)))))
 
 @export
 (defun digest-sha256 (string)
@@ -76,48 +82,6 @@
   (cond ((string= (car column) "N")
          (parse-integer (cdr column)))
         (t (cdr column))))
-
-(defun string-desc (str)
-  `(:obj ("S" . ,str)))
-
-(defun string-set-desc (set)
-  `(:obj ("SS" . ,set)))
-
-(defun binary-desc (binary)
-  `(:obj ("B" . ,binary)))
-
-(defun binary-set-desc (set)
-  `(:obj ("BS" . ,set)))
-
-(defun bool-desc (bool)
-  (let ((bool (if bool "true" "false")))
-    `(:obj ("BOOL" . ,bool))))
-
-(defun null-desc (null)
-  (declare (ignore null))
-  `(:obj "NULL"))
-
-(defun number-desc (num)
-  `(:obj ("N" . ,(write-to-string num))))
-
-(defun number-set-desc (set)
-  `(:obj ("NS" . ,(mapcar #'(lambda (item) (write-to-string item)) set))))
-
-(defun list-desc (list)
-  `(:obj ("L" . ,list)))
-
-(defun map-desc (map)
-  `(:obj ("M" . ,map)))
-
-@export
-(defun desc (object)
-  (etypecase object
-    (boolean (bool-desc object))
-    (number (number-desc object))
-    (string (string-desc object))
-    (cons (if (every #'numberp object)
-              (number-set-desc object)
-              (string-set-desc object)))))
 
 @export
 (defun add-obj-to-list (lst)

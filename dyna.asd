@@ -32,10 +32,11 @@
                 :components
                 ((:file "dyna" :depends-on ("structure" "operation" "error"))
                  (:file "error")
-                 (:file "util")
+                 (:file "util" :depends-on ("desc"))
+                 (:file "desc" :pathname "describe")
                  (:file "request" :depends-on ("util"))
                  (:file "fetch" :depends-on ("request" "error"))
-                 (:file "content" :depends-on ("structure"))
+                 (:file "content" :depends-on ("structure" "desc"))
                  (:file "operation" :depends-on ("fetch" "content" "structure" "error"))
                  (:file "structure"))))
   :description "Common Lisp library for AWS DynamoDB."

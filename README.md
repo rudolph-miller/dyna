@@ -19,6 +19,22 @@ Dyna is a Common Lisp library for AWS DynamoDB.
 Most API return multiple values, the formaer is formatted result, and the latter is raw result.
 
 ### batch-get-item
+```Lisp
+(batch-get-item-content dyna :request-items '(("Forum" . (("Keys" . ((("Id" . 1))
+                                                                     (("Id" . 2))))
+                                                          ("ProjectionExpression" . "Id, Title, Author")))
+                                              ("Thread" . (("Keys" . ((("ForumName" . "Amazon DynamoDB")
+                                                                       ("Subject" . "Concurrent reads"))))
+                                                           ("AttributesToGet" . "ForumName, Subject"))))
+                             :return-consumed-capacity "TOTAL")))
+=> (("Forum" (("Id" . 1) ("Title" . "Enjoy Lisp") ("Author" . "Rudolph-Miller"))
+             (("Id" . 2) ("Title" . "Sophisticated Programming Language") ("Author" . "Lisp-Alien")))
+    ("Thread" (("ForumName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads"))))
+```
+  - returns a list of alists.
+  - Support
+    - `:request-items`
+    - `:return-consumed-capacity`
 
 ### batch-write-item
 
