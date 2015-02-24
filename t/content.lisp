@@ -183,6 +183,23 @@
     (skip 1 "No tests written."))
 
   (subtest "update-table"
-    (skip 1 "No tests written.")))
+    (is-error (update-table-content dyna :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                         :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                                   ("WriteCapacityUnits" . 5)))
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :table-name.")
+    (is (update-table-content dyna :table-name "Thread"
+                                         :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                                  (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                   :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                             ("WriteCapacityUnits" . 5)))
+        (build-json
+         "\"TableName\":\"Thread\""
+         "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"
+         "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}")
+        "can return the correct JSON object.")))
 
 (finalize)

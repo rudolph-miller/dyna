@@ -137,6 +137,21 @@ Most API return multiple values, the formaer is formatted result, and the latter
 - update-item
 
 - update-table
+```Lisp
+(update-table dyna :table-name "Thread"
+                   :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                            (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                            (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                   :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                             ("WriteCapacityUnits" . 5)))
+```
+  - returns t if the operation succeeded.
+  - Support
+    - `:table-name`
+    - `:attribute-definitions`
+    - `:provisioned-throughput`
+  - Unsupport
+    - `:global-secondary-indexes`
 
 ## Author
 

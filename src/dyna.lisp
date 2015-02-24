@@ -76,4 +76,5 @@
 
 (defoperation update-item)
 
-(defoperation update-table)
+(defoperation update-table
+  (values t *result*))
