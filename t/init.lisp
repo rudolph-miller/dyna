@@ -34,3 +34,7 @@
 (defmacro with-stub-now (clock &body body)
   `(let ((local-time:*clock* ,clock))
      ,@body))
+
+@export
+(defun build-json (&rest lst)
+  (format nil "{~{~a~^,~}}" lst))

@@ -2,6 +2,7 @@
 (defpackage dyna-test.content
   (:use :cl
         :prove
+        :dyna-test.init
         :dyna
         :dyna.error
         :dyna.content))
@@ -90,12 +91,11 @@
                                                                ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
                                    :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                              ("WriteCapacityUnits" . 5)))
-        (format nil "{~{~a~^,~}}"
-                (list "\"TableName\":\"Thread\""
-                      "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"
-                      "\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"Subject\",\"KeyType\":\"RANGE\"}]"
-                      "\"LocalSecondaryIndexes\":[{\"IndexName\":\"LastPostIndex\",\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"LastPostDateTime\",\"KeyType\":\"RANGE\"}],\"Projection\":{\"ProjectionType\":\"KEYS_ONLY\"}}]"
-                      "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}"))
+        (build-json "\"TableName\":\"Thread\""
+                    "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"
+                    "\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"Subject\",\"KeyType\":\"RANGE\"}]"
+                    "\"LocalSecondaryIndexes\":[{\"IndexName\":\"LastPostIndex\",\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"LastPostDateTime\",\"KeyType\":\"RANGE\"}],\"Projection\":{\"ProjectionType\":\"KEYS_ONLY\"}}]"
+                    "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}")
         "can return the correct JSON object."))
 
   (subtest "delete-item"
@@ -109,11 +109,10 @@
                                   :key '(("ForumName" . "Amazon DynamoDB"))
                                   :condition-expression "attribute_not_exists(Replies)"
                                   :return-values "ALL_OLD")
-        (format nil "{~{~a~^,~}}"
-                (list "\"TableName\":\"Thread\""
-                      "\"Key\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
-                      "\"ReturnValues\":\"ALL_OLD\""
-                      "\"ConditionExpression\":\"attribute_not_exists(Replies)\""))
+        (build-json "\"TableName\":\"Thread\""
+                    "\"Key\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
+                    "\"ReturnValues\":\"ALL_OLD\""
+                    "\"ConditionExpression\":\"attribute_not_exists(Replies)\"")
         "can return the correct JSON object."))
 
 
@@ -144,11 +143,10 @@
                                :key '(("Tags" . ("Multiple Items" "HelpMe")))
                                :consistent-read t
                                :return-consumed-capacity "TOTAL")
-        (format nil "{~{~a~^,~}}"
-                (list "\"TableName\":\"Thread\""
-                      "\"Key\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]}}"
-                      "\"ConsistentRead\":true"
-                      "\"ReturnConsumedCapacity\":\"TOTAL\""))
+        (build-json "\"TableName\":\"Thread\""
+                    "\"Key\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]}}"
+                    "\"ConsistentRead\":true"
+                    "\"ReturnConsumedCapacity\":\"TOTAL\"")
         "can return the correct JSON object."))
 
   (subtest "list-tables"
@@ -169,11 +167,10 @@
                                :condition-expression "ForumName <> :f and Subject <> :s"
                                :expression-attribute-values '((":f" . "Amazon DynamoDB")
                                                               (":s" . "update multiple items")))
-        (format nil "{~{~a~^,~}}"
-                (list "\"TableName\":\"Thread\""
-                      "\"Item\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]},\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
-                      "\"ConditionExpression\":\"ForumName <> :f and Subject <> :s\""
-                      "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"update multiple items\"}}"))
+        (build-json "\"TableName\":\"Thread\""
+                    "\"Item\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]},\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
+                    "\"ConditionExpression\":\"ForumName <> :f and Subject <> :s\""
+                    "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"update multiple items\"}}")
         "can return the correct JSON object."))
 
   (subtest "query"
