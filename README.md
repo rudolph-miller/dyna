@@ -18,11 +18,11 @@ Dyna is a Common Lisp library for AWS DynamoDB.
 ## API
 Most API return multiple values, the formaer is formatted result, and the latter is raw result.
 
-- batch-get-item
+### batch-get-item
 
-- batch-write-item
+### batch-write-item
 
-- create-table
+### create-table
 ```Lisp
 (create-table dyna :table-name "Thread"
                    :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))
@@ -49,7 +49,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:local-secondary-indexes`
     - `:provisioned-throughput`
 
-- delete-item
+### delete-item
 ```Lisp
 (delete-item dyna :table-name "Thread"
                   :key '(("ForumName" . "Amazon DynamoDB"))
@@ -64,7 +64,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:condition-expression`
     - `:return-values`
 
-- delete-table
+### delete-table
 ```Lisp
 (delete-table dyna :table-name "Thread")
 ;; => T
@@ -73,7 +73,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - SUpport
     - `:table-name`
 
-- describe-table
+### describe-table
 ```Lisp
 (describe-table dyna :table-name "Thread")
 ```
@@ -81,7 +81,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - Support
     - `:table-name`
 
-- get-item
+### get-item
 ```Lisp
 (get-item dyna :table-name "Thread"
                :key '(("Tags" . ("Multiple Items" "HelpMe")))
@@ -100,14 +100,14 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:returnItem-collection-metrics`
     - `:return-values`
 
-- ListTables
+### list-tables
 ```Lisp
 (list-tables-content dyna)
 ;; => ("Thread")
 ```
   - returns a list of table names.
 
-- PutItem
+### put-item
 ```Lisp
 (put-item dyna :table-name "Thread"
                 :item '(("Tags" . ("Multiple Items" "HelpMe"))
@@ -130,13 +130,13 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:return-values`
 
 
-- query
+### query
 
-- scan
+### scan
 
-- update-item
+### update-item
 
-- update-table
+### update-table
 ```Lisp
 (update-table dyna :table-name "Thread"
                    :attribute-definitions '((("AttributeName" . "ForumName")
