@@ -27,9 +27,9 @@ Most API return multiple values, the formaer is formatted result, and the latter
                                                                ("Subject" . "Concurrent reads"))))
                                                    ("AttributesToGet" . "ForumName, Subject"))))
                      :return-consumed-capacity "TOTAL")))
-=> (("Forum" (("Id" . 1) ("Title" . "Enjoy Lisp") ("Author" . "Rudolph-Miller"))
-             (("Id" . 2) ("Title" . "Sophisticated Programming Language") ("Author" . "Lisp-Alien")))
-    ("Thread" (("ForumName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads"))))
+;; => (("Forum" (("Id" . 1) ("Title" . "Enjoy Lisp") ("Author" . "Rudolph-Miller"))
+;;              (("Id" . 2) ("Title" . "Sophisticated Programming Language") ("Author" . "Lisp-Alien")))
+;;     ("Thread" (("ForumName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads"))))
 ```
   - returns a list of alists.
   - Support
@@ -169,7 +169,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
             :key-conditions '(("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
                                               ("ComparisonOperator" . "EQ"))))
             :return-consumed-capacity "TOTAL")
-=> ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
+;; => ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
 ```
   - returns list of alists.
   - Support
@@ -200,7 +200,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
            :expression-attribute-values '((":num" . 10))
            :scan-index-forward t
            :return-consumed-capacity "TOTAL")
-=> ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
+;; => ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
 ```
   - returns list of alists.
   - Support
@@ -231,6 +231,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
                   :update-expression "set Replies = Replies + :num"
                   :expression-attribute-values '((":num" . 1))
                   :return-values "NONE")
+;; => T
 ```
   - returns t if the operation succeeded.
   - Support
