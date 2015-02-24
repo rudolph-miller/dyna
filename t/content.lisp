@@ -31,7 +31,19 @@
         "can return the correct JSON object."))
 
   (subtest "batch-write-item"
-    (skip 1 "No tests written."))
+    (is-error (batch-write-item-content dyna :return-consumed-capacity "TOTAL")
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :request-items.")
+    (is (batch-write-item-content dyna :request-items '(("Forum" . ((("PutRequest" . (("Item" . (("Name" . "Amazon DynamoDB")
+                                                                                                 ("Category" . "Amazon Web Services"))))))
+                                                                    (("PutRequest" . (("Item" . (("Name" . "Amazon RDS")
+                                                                                                 ("Category" . "Amazon Web Services"))))))))
+                                                        ("Thread" . ((("PutRequest" . (("Item" . (("ForumName" . "Amazon DynamoDB")
+                                                                                                  ("Subject" . "Concurrent reads")))))))))
+                                       :return-consumed-capacity "TOTAL")
+        (build-json "\"RequestItems\":{\"Forum\":[{\"PutRequest\":{\"Item\":{\"Name\":{\"S\":\"Amazon DynamoDB\"},\"Category\":{\"S\":\"Amazon Web Services\"}}}},{\"PutRequest\":{\"Item\":{\"Name\":{\"S\":\"Amazon RDS\"},\"Category\":{\"S\":\"Amazon Web Services\"}}}}],\"Thread\":[{\"PutRequest\":{\"Item\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"},\"Subject\":{\"S\":\"Concurrent reads\"}}}}]}"
+                    "\"ReturnConsumedCapacity\":\"TOTAL\"")
+        "can return the correct JSON object."))
 
   (subtest "create-table"
     (is-error (create-table-content dyna :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))

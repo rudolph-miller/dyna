@@ -35,7 +35,22 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - Support
     - `:request-items`
     - `:return-consumed-capacity`
+
 ### batch-write-item
+```Lisp
+(batch-write-item dyna :request-items '(("Forum" . ((("PutRequest" . (("Item" . (("Name" . "Amazon DynamoDB")
+                                                                                 ("Category" . "Amazon Web Services"))))))
+                                                    (("PutRequest" . (("Item" . (("Name" . "Amazon RDS")
+                                                                                 ("Category" . "Amazon Web Services"))))))))
+                                        ("Thread" . ((("PutRequest" . (("Item" . (("ForumName" . "Amazon DynamoDB")
+                                                                                  ("Subject" . "Concurrent reads")))))))))
+                       :return-consumed-capacity "TOTAL")
+;; => T
+```
+  - returns t if the operation succeeded.
+  - Support
+    - `:request-items`
+    - `:return-consumed-capacity`
 
 ### create-table
 ```Lisp

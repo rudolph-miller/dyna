@@ -47,7 +47,8 @@
             result)
           *result*))
 
-(defoperation batch-write-item)
+(defoperation batch-write-item
+  (values t *result*))
 
 (defoperation create-table
   (values t *result*))

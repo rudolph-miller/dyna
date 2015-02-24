@@ -64,7 +64,21 @@
           (when return-consumed-capacity
             (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
-(defcontent batch-write-item () ())
+(defcontent batch-write-item (&key request-items return-consumed-capacity)
+    (request-items)
+  (append (list `("RequestItems" . ,(add-obj-to-list
+                                     (mapcar #'(lambda (table)
+                                                 (cons (car table)
+                                                       (mapcar #'(lambda (item)
+                                                                   (setf (cdadar item)
+                                                                         (add-obj-to-list (build-desc-list (cdadar item))))
+                                                                   (setf (cdar item)
+                                                                         (add-obj-to-list (cdar item)))
+                                                                   (add-obj-to-list item))
+                                                               (cdr table))))
+                                             request-items))))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
 (defcontent create-table (&key table-name attribute-definitions key-schema global-secondary-indexes
                                local-secondary-indexes provisioned-throughput)
