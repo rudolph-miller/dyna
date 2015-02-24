@@ -32,7 +32,7 @@
                     :content content)))
 
 
-#-(and)
+#+(or)
 (defun fetch (credentials region operation content)
     (let* ((target (concatenate 'string "DynamoDB_20120810." operation))
            (request (make-request :service "dynamodb"
