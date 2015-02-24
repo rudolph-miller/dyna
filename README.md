@@ -139,11 +139,15 @@ Most API return multiple values, the formaer is formatted result, and the latter
 - update-table
 ```Lisp
 (update-table dyna :table-name "Thread"
-                   :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
-                                            (("AttributeName" . "Subject") ("AttributeType" . "S"))
-                                            (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                   :attribute-definitions '((("AttributeName" . "ForumName")
+                                            ("AttributeType" . "S"))
+                                            (("AttributeName" . "Subject")
+                                            ("AttributeType" . "S"))
+                                            (("AttributeName" . "LastPostDateTime")
+                                            ("AttributeType" . "S")))
                    :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                              ("WriteCapacityUnits" . 5)))
+;; => T
 ```
   - returns t if the operation succeeded.
   - Support
@@ -151,7 +155,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:attribute-definitions`
     - `:provisioned-throughput`
   - Unsupport
-    - `:global-secondary-indexes`
+    - `:global-secondary-indexe`
 
 ## Author
 
