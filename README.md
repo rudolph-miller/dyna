@@ -192,6 +192,37 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:expression-attribute-names`
 
 ### scan
+```Lisp
+(scan dyna :table-name "Thread"
+           :projection-expression "ForumName,Subject"
+           :limit 3
+           :filter-expression "Replies > :num"
+           :expression-attribute-values '((":num" . 10))
+           :scan-index-forward t
+           :return-consumed-capacity "TOTAL")
+=> ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
+```
+  - returns list of alists.
+  - Support
+     - `:table-name`
+     - `:key-conditions`
+     - `:return-consumed-capacity`
+     - `:attributes-to-get`
+     - `:index-name`
+     - `:select`
+     - `:limit`
+     - `:consistent-read`
+     - `:conditional-operator`
+     - `:exclusive-start-key`
+     - `:expression-attribute-values`
+     - `:filter-expression`
+     - `:projection-expression`
+     - `:scan-filter`
+     - `:scan-index-forward`
+     - `:segment`
+     - `:total-segments`
+  - Unsupport
+    - `:expression-attribute-names`
 
 ### update-item
 ```List

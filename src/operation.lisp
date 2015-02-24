@@ -75,7 +75,9 @@
   (values (mapcar #'parse-result-item (val *result* "Items"))
           *result*))
 
-(defoperation scan)
+(defoperation scan
+  (values (mapcar #'parse-result-item (val *result* "Items"))
+          *result*))
 
 (defoperation update-item
   (values t *result*))

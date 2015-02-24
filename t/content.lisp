@@ -8,7 +8,7 @@
         :dyna.content))
 (in-package :dyna-test.content)
 
-(plan nil)
+(plan 13)
 
 (diag "dyna-test.content")
 
@@ -234,24 +234,6 @@
                                   :return-consumed-capacity "TOTAL")
               '<dyna-incomplete-argumet-error>
               "can raise the error without :key-conditions.")
-    (print (query-content dyna :table-name "Thread"
-                            :select "SPECIFIC_ATTRIBUTES"
-                            :attributes-to-get '("ForumName" "Subject")
-                            :index-name "LastPostIndex"
-                            :limit 3
-                            :consistent-read t
-                            :key-conditions '(("LastPostDateTime" . (("AttributeValueList" . ("20130101" "20130115"))
-                                                                     ("ComparisonOperator" . "BETWEEN")))
-                                              ("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
-                                                              ("ComparisonOperator" . "EQ"))))
-                            :conditional-operator "OR"
-                            :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
-                                                          ("ComparisonOperator" . "EQ"))))
-                            :exclusive-start-key '(("ForumName" . "Amazon RDS"))
-                            :filter-expression "Replies > :num"
-                            :expression-attribute-values '((":num" . 1))
-                            :scan-index-forward t
-                            :return-consumed-capacity "TOTAL"))
     (is (query-content dyna :table-name "Thread"
                             :select "SPECIFIC_ATTRIBUTES"
                             :attributes-to-get '("ForumName" "Subject")
@@ -270,9 +252,8 @@
                             :expression-attribute-values '((":num" . 1))
                             :scan-index-forward t
                             :return-consumed-capacity "TOTAL")
-        (print (build-json "\"TableName\":\"Thread\""
-                    "\"KeyConditions\":{\"LastPostDateTime\":{\"AttributeValueList\":[{\"S\":\"20130101\"},{\"S\":\"20130115\"}],\"ComparisonOperator\":\"BETWEEN\"},\"ForumName\":{\"AttributeValueList\":[{\"S\":\"Amazon DynamoDB\"}]"
-                    "\"ComparisonOperator\":\"EQ\"}}"
+        (build-json "\"TableName\":\"Thread\""
+                    "\"KeyConditions\":{\"LastPostDateTime\":{\"AttributeValueList\":[{\"S\":\"20130101\"},{\"S\":\"20130115\"}],\"ComparisonOperator\":\"BETWEEN\"},\"ForumName\":{\"AttributeValueList\":[{\"S\":\"Amazon DynamoDB\"}],\"ComparisonOperator\":\"EQ\"}}"
                     "\"ReturnConsumedCapacity\":\"TOTAL\""
                     "\"AttributesToGet\":[\"ForumName\",\"Subject\"]"
                     "\"IndexName\":\"LastPostIndex\""
@@ -286,11 +267,61 @@
                     "\"QueryFilter\":{\"Subject\":{\"AttributeValueList\":[{\"S\":\"Update multiple items\"}"
                     "{\"S\":\"Concurrent reads\"}]"
                     "\"ComparisonOperator\":\"EQ\"}}"
-                    "\"ScanIndexForward\":true"))
+                    "\"ScanIndexForward\":true")
         "can return the correct JSON object."))
 
   (subtest "scan"
-    (skip 1 "No tests written."))
+    (is-error (scan-content dyna :select "SPECIFIC_ATTRIBUTES"
+                                 :attributes-to-get '("ForumName" "Subject")
+                                 :index-name "LastPostIndex"
+                                 :limit 3
+                                 :consistent-read t
+                                 :conditional-operator "OR"
+                                 :scan-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
+                                                              ("ComparisonOperator" . "EQ"))))
+                                 :exclusive-start-key '(("ForumName" . "Amazon RDS"))
+                                 :filter-expression "Replies > :num"
+                                 :expression-attribute-values '((":num" . 1))
+                                 :scan-index-forward t
+                                 :return-consumed-capacity "TOTAL"
+                                 :segment 1
+                                 :total-segments 4)
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :table-name.")
+    (is (scan-content dyna :table-name "Thread"
+                           :select "SPECIFIC_ATTRIBUTES"
+                           :attributes-to-get '("ForumName" "Subject")
+                           :index-name "LastPostIndex"
+                           :limit 3
+                           :consistent-read t
+                           :conditional-operator "OR"
+                           :scan-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
+                                                        ("ComparisonOperator" . "EQ"))))
+                           :exclusive-start-key '(("ForumName" . "Amazon RDS"))
+                           :filter-expression "Replies > :num"
+                           :expression-attribute-values '((":num" . 1))
+                           :scan-index-forward t
+                           :return-consumed-capacity "TOTAL"
+                           :segment 1
+                           :total-segments 4)
+         (build-json "\"TableName\":\"Thread\""
+                     "\"ReturnConsumedCapacity\":\"TOTAL\""
+                     "\"AttributesToGet\":[\"ForumName\",\"Subject\"]"
+                     "\"IndexName\":\"LastPostIndex\""
+                     "\"Select\":\"SPECIFIC_ATTRIBUTES\""
+                     "\"Limit\":3"
+                     "\"ConsistentRead\":true"
+                     "\"ConditionalOperator\":\"OR\""
+                     "\"ExclusiveStartKey\":{\"ForumName\":{\"S\":\"Amazon RDS\"}}"
+                     "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}"
+                     "\"FilterExpression\":\"Replies > :num\""
+                     "\"ScanFilter\":{\"Subject\":{\"AttributeValueList\":[{\"S\":\"Update multiple items\"}"
+                     "{\"S\":\"Concurrent reads\"}]"
+                     "\"ComparisonOperator\":\"EQ\"}}"
+                     "\"ScanIndexForward\":true"
+                     "\"Segment\":1"
+                     "\"TotalSegments\":4")
+        "can return the correct JSON object."))
 
   (subtest "update-item"
     (is-error (update-item-content dyna :key '(("ForumName" . "Amazon DynamoDB"))
