@@ -16,6 +16,8 @@
                 :now)
   (:import-from :alexandria
                 :make-keyword)
+  (:import-from :split-sequence
+                :split-sequence)
   (:import-from :jsown
                 :new-js
                 :do-json-keys))
@@ -133,3 +135,7 @@
               (cons (car pair)
                     (desc (cdr pair))))
           lst))
+
+@export
+(defun operation->opration-for-fetch (op)
+  (format nil "~{~:(~a~)~}" (split-sequence #\- (symbol-name op))))

@@ -180,7 +180,29 @@
     (skip 1 "No tests written."))
 
   (subtest "update-item"
-    (skip 1 "No tests written."))
+    (is-error (update-item-content dyna :key '(("ForumName" . "Amazon DynamoDB"))
+                                :update-expression "set Replies = Replies + :num"
+                                :expression-attribute-values '((":num" . 1))
+                                :return-values "NONE")
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :table-name.")
+    (is-error (update-item-content dyna :table-name "Thread"
+                                :update-expression "set Replies = Replies + :num"
+                                :expression-attribute-values '((":num" . 1))
+                                :return-values "NONE")
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :key.")
+    (is (update-item-content dyna :table-name "Thread"
+                                  :key '(("ForumName" . "Amazon DynamoDB"))
+                                  :update-expression "set Replies = Replies + :num"
+                                  :expression-attribute-values '((":num" . 1))
+                                  :return-values "NONE")
+        (build-json "\"TableName\":\"Thread\""
+                    "\"Key\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
+                    "\"UpdateExpression\":\"set Replies = Replies + :num\""
+                    "\"ReturnValues\":\"NONE\""
+                    "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}")
+        "can return the correct JSON object."))
 
   (subtest "update-table"
     (is-error (update-table-content dyna :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
@@ -191,9 +213,9 @@
               '<dyna-incomplete-argumet-error>
               "can raise the error without :table-name.")
     (is (update-table-content dyna :table-name "Thread"
-                                         :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
-                                                                  (("AttributeName" . "Subject") ("AttributeType" . "S"))
-                                                                  (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                                   :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                            (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                            (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
                                    :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                              ("WriteCapacityUnits" . 5)))
         (build-json

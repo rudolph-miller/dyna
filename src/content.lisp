@@ -104,7 +104,23 @@
 
 (defcontent scan () ())
 
-(defcontent update-item () ())
+(defcontent update-item (&key table-name key update-expression condition-expression return-values
+                              expression-attribute-values expression-attribute-names return-consumed-capacity)
+    (table-name key)
+  (append (list `("TableName" . ,table-name)
+                `("Key" . ,(add-obj-to-list (build-desc-list key))))
+          (when update-expression
+            (list `("UpdateExpression" . ,update-expression)))
+          (when condition-expression
+            (list `("ConditionExpression" . ,condition-expression)))
+          (when return-values
+            (list `("ReturnValues" . ,return-values)))
+          (when expression-attribute-values
+            (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
+          (when expression-attribute-names
+            (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
 (defcontent update-table (&key table-name attribute-definitions provisioned-throughput)
     (table-name)

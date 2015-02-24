@@ -2,7 +2,6 @@
 (defpackage dyna
   (:use :cl
         :jsown
-        :split-sequence
         :annot.class
         :dyna.error
         :dyna.util
@@ -11,39 +10,48 @@
         :dyna.fetch)
   (:import-from :flexi-streams
                 :octets-to-string)
-  (:export :make-dyna))
+  (:export :make-dyna
+           :dyna-credentials
+           :dyna-region
+           :batch-get-item
+           :batch-write-item
+           :create-table
+           :delete-item
+           :delete-table
+           :describe-table
+           :get-item
+           :list-tables
+           :put-item
+           :query
+           :scan
+           :update-item
+           :upadate-table))
 (in-package :dyna)
 
 (syntax:use-syntax :annot)
 
 (defvar *result* nil)
 
-@export
-@export-accessors
 (defstruct dyna
   (credentials)
   (region "us-east-1"))
 
 (defmacro defoperation (operation &body body)
-  `(progn (export ',operation)
-          (defun ,operation (dyna &rest args)
-            (let ((op (operation->opration-for-fetch ',operation))
-                  (content (apply (intern (format nil "~a-CONTENT" ',operation)
-                                          (find-package :dyna.content))
-                                  dyna
-                                  args)))
-              (multiple-value-bind (result status meta) (fetch (dyna-credentials dyna)
-                                                               (dyna-region dyna)
-                                                               op
-                                                               content)
-                (cond
-                  ((= status 200)
-                   (let ((*result* (parse (octets-to-string result))))
-                     ,@body))
-                  (t (error '<dyna-request-error> :message (octets-to-string result) :meta meta))))))))
-
-(defun operation->opration-for-fetch (op)
-  (format nil "~{~:(~a~)~}" (split-sequence #\- (symbol-name op))))
+  `(defun ,operation (dyna &rest args)
+     (let ((op (operation->opration-for-fetch ',operation))
+           (content (apply (intern (format nil "~a-CONTENT" ',operation)
+                                   (find-package :dyna.content))
+                           dyna
+                           args)))
+       (multiple-value-bind (result status meta) (fetch (dyna-credentials dyna)
+                                                        (dyna-region dyna)
+                                                        op
+                                                        content)
+         (cond
+           ((= status 200)
+            (let ((*result* (parse (octets-to-string result))))
+              ,@body))
+           (t (error '<dyna-request-error> :message (octets-to-string result) :meta meta)))))))
 
 (defoperation batch-get-item)
 
@@ -74,7 +82,8 @@
 
 (defoperation scan)
 
-(defoperation update-item)
+(defoperation update-item
+  (values t *result*))
 
 (defoperation update-table
   (values t *result*))

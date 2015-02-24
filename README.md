@@ -135,6 +135,24 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ### scan
 
 ### update-item
+```List
+(update-item dyna :table-name "Thread"
+                  :key '(("ForumName" . "Amazon DynamoDB"))
+                  :update-expression "set Replies = Replies + :num"
+                  :expression-attribute-values '((":num" . 1))
+                  :return-values "NONE")
+```
+  - returns t if the operation succeeded.
+  - Support
+    - `:table-name`
+    - `:key`
+    - `:update-expression`
+    - `:expression-attribute-names`
+    - `:expression-attribute-values`
+    - `:return-values`
+    - `:return-consumed-capacity`
+  - Unsupport
+    - `:return-item-collection-metrics`
 
 ### update-table
 ```Lisp
