@@ -51,7 +51,9 @@
            ((= status 200)
             (let ((*result* (parse (octets-to-string result))))
               ,@body))
-           (t (error '<dyna-request-error> :message (octets-to-string result) :meta meta)))))))
+           (t (error '<dyna-request-error> :status status
+                                           :message (octets-to-string result)
+                                           :meta meta)))))))
 
 (defoperation batch-get-item)
 

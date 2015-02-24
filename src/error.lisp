@@ -10,14 +10,19 @@
 
 @export
 (define-condition <dyna-request-error> (<dyna-error>)
-  ((meta :initarg :meta)
+  ((status :initarg :status)
+   (meta :initarg :meta)
    (message :initarg :message))
   (:report
    (lambda (condition stream)
      (format stream
-             "Error occured in request.~%Messssage: ~a~%Meta: ~a."
+             "Error occured in request.~%Sattus:~a~%Messssage: ~a~%Meta: ~a."
+             (slot-value condition 'status)
              (slot-value condition 'message)
-             (slot-value condition 'meta)))))
+             (let ((meta (slot-value condition 'meta)))
+               (etypecase meta
+                 (hash-table (alexandria:hash-table-plist meta))
+                 (cons meta)))))))
 
 @export
 (define-condition <dyna-incomplete-argumet-error> (<dyna-error>)
