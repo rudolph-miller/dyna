@@ -21,8 +21,8 @@
              (slot-value condition 'message)
              (let ((meta (slot-value condition 'meta)))
                (etypecase meta
-                 (hash-table (alexandria:hash-table-plist meta))
-                 (cons meta)))))))
+                 (cons meta)
+                 (hash-table (alexandria:hash-table-plist meta))))))))
 
 @export
 (define-condition <dyna-incomplete-argumet-error> (<dyna-error>)

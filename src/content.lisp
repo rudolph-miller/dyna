@@ -3,7 +3,8 @@
   (:use :cl
         :jsown
         :dyna.util
-        :dyna.error)
+        :dyna.error
+        :dyna.structure)
   (:import-from :alexandria
                 :plist-alist
                 :make-keyword))

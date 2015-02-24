@@ -30,12 +30,14 @@
                :alexandria)
   :components ((:module "src"
                 :components
-                ((:file "dyna" :depends-on ("fetch" "error" "content"))
+                ((:file "dyna" :depends-on ("structure" "operation" "error"))
                  (:file "error")
                  (:file "util")
                  (:file "request" :depends-on ("util"))
-                 (:file "fetch" :depends-on ("request"))
-                 (:file "content"))))
+                 (:file "fetch" :depends-on ("request" "error"))
+                 (:file "content" :depends-on ("structure"))
+                 (:file "operation" :depends-on ("fetch" "content" "structure" "error"))
+                 (:file "structure"))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames
