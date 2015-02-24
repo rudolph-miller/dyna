@@ -17,6 +17,7 @@
   (:import-from :alexandria
                 :make-keyword)
   (:import-from :jsown
+                :new-js
                 :do-json-keys))
 (in-package :dyna.util)
 

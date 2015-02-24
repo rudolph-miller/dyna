@@ -31,7 +31,7 @@
                                                                                       ("KeyType" . "HASH"))
                                                                                      (("AttributeName" . "LastPostDateTime")
                                                                                       ("KeyType" . "RANGE"))))
-                                                                     ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                                                     ("Projection" . (("ProjectionType" . "KEYS_ONLY")))))
                                          :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                                    ("WriteCapacityUnits" . 5)))
               '<dyna-incomplete-argumet-error>
@@ -44,7 +44,7 @@
                                                                                       ("KeyType" . "HASH"))
                                                                                      (("AttributeName" . "LastPostDateTime")
                                                                                       ("KeyType" . "RANGE"))))
-                                                                     ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                                                     ("Projection" . (("ProjectionType" . "KEYS_ONLY")))))
                                          :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                                    ("WriteCapacityUnits" . 5)))
               '<dyna-incomplete-argumet-error>
@@ -58,7 +58,7 @@
                                                                                       ("KeyType" . "HASH"))
                                                                                      (("AttributeName" . "LastPostDateTime")
                                                                                       ("KeyType" . "RANGE"))))
-                                                                     ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                                                     ("Projection" . (("ProjectionType" . "KEYS_ONLY")))))
                                          :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                                    ("WriteCapacityUnits" . 5)))
               '<dyna-incomplete-argumet-error>
@@ -74,7 +74,7 @@
                                                                                       ("KeyType" . "HASH"))
                                                                                      (("AttributeName" . "LastPostDateTime")
                                                                                       ("KeyType" . "RANGE")))))
-                                                                    ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                                                    ("Projection" . (("ProjectionType" . "KEYS_ONLY")))))
               '<dyna-incomplete-argumet-error>
               "can raise the error without :provisioned-throughput.")
     (is (create-table-content dyna :table-name "Thread"
@@ -88,14 +88,14 @@
                                                                                 ("KeyType" . "HASH"))
                                                                                (("AttributeName" . "LastPostDateTime")
                                                                                 ("KeyType" . "RANGE"))))
-                                                               ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                                               ("Projection" . (("ProjectionType" . "KEYS_ONLY")))))
                                    :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                              ("WriteCapacityUnits" . 5)))
         (build-json "\"TableName\":\"Thread\""
                     "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"
                     "\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"Subject\",\"KeyType\":\"RANGE\"}]"
-                    "\"LocalSecondaryIndexes\":[{\"IndexName\":\"LastPostIndex\",\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"LastPostDateTime\",\"KeyType\":\"RANGE\"}],\"Projection\":{\"ProjectionType\":\"KEYS_ONLY\"}}]"
-                    "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}")
+                    "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}"
+                    "\"LocalSecondaryIndexes\":[{\"IndexName\":\"LastPostIndex\",\"KeySchema\":[{\"AttributeName\":\"ForumName\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"LastPostDateTime\",\"KeyType\":\"RANGE\"}],\"Projection\":{\"ProjectionType\":\"KEYS_ONLY\"}}]")
         "can return the correct JSON object."))
 
   (subtest "delete-item"

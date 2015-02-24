@@ -3,8 +3,7 @@
   (:use :cl
         :jsown
         :dyna.util
-        :dyna.error
-        :dyna)
+        :dyna.error)
   (:import-from :alexandria
                 :plist-alist
                 :make-keyword))
@@ -86,7 +85,7 @@
                                           (cond
                                             ((string= (car item) "Projection")
                                              (cons (car item)
-                                                   (list :obj (cdr item))))
+                                                   (cons :obj (cdr item))))
                                             ((string= (car item) "KeySchema")
                                              (cons (car item)
                                                    (mapcar #'(lambda (item)
@@ -102,9 +101,9 @@
                    `("KeySchema" . ,(mapcar #'(lambda (item)
                                                 (cons :obj item))
                                             key-schema))
-                   `("LocalSecondaryIndexes" . ,(index-mapper local-secondary-indexes)))
-            (when provisioned-throughput
-              (list `("ProvisionedThroughput" . (:obj ,@provisioned-throughput))))
+                   `("ProvisionedThroughput" . ,(cons :obj provisioned-throughput)))
+            (when local-secondary-indexes
+              (list `("LocalSecondaryIndexes" . ,(index-mapper local-secondary-indexes))))
             (when global-secondary-indexes
               (list `("GlobalSecodaryIndexes" . ,(index-mapper global-secondary-indexes)))))))
 
@@ -131,7 +130,7 @@
 
 (defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity)
     (table-name key)
-  (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
+  (append (list  `("TableName" . ,table-name)
                  `("Key" . (:obj ,@(mapcar #'(lambda (pair)
                                                (cons (car pair)
                                                      (desc (cdr pair))))
@@ -147,7 +146,7 @@
 
 (defcontent put-item (&key table-name item condition-expression expression-attribute-values)
     (table-name item)
-  (append (list  `("TableName" . ,(or table-name (dyna-table-name dyna)))
+  (append (list  `("TableName" . ,table-name)
                  `("Item" . (:obj ,@(mapcar #'(lambda (pair)
                                                 (cons (car pair)
                                                       (desc (cdr pair))))

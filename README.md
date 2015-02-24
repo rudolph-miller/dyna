@@ -35,7 +35,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
                                                                 ("KeyType" . "HASH"))
                                                                (("AttributeName" . "LastPostDateTime")
                                                                 ("KeyType" . "RANGE"))))
-                                               ("Projection" . ("ProjectionType" . "KEYS_ONLY"))))
+                                               ("Projection" . (("ProjectionType" . "KEYS_ONLY")))))
                    :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                              ("WriteCapacityUnits" . 5)))
 ;; => T
