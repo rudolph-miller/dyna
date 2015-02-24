@@ -71,7 +71,9 @@
 (defoperation put-item
   (values t *result*))
 
-(defoperation query)
+(defoperation query
+  (values (mapcar #'parse-result-item (val *result* "Items"))
+          *result*))
 
 (defoperation scan)
 

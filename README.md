@@ -161,6 +161,35 @@ Most API return multiple values, the formaer is formatted result, and the latter
 
 
 ### query
+```Lisp
+(query dyna :table-name "Thread"
+            :select "SPECIFIC_ATTRIBUTES"
+            :attributes-to-get '("ForumName" "Subject")
+            :limit 3
+            :key-conditions '(("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
+                                              ("ComparisonOperator" . "EQ"))))
+            :return-consumed-capacity "TOTAL")
+=> ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
+```
+  - returns list of alists.
+  - Support
+     - `:table-name`
+     - `:key-conditions`
+     - `:return-consumed-capacity`
+     - `:attributes-to-get`
+     - `:index-name`
+     - `:select`
+     - `:limit`
+     - `:consistent-read`
+     - `:conditional-operator`
+     - `:exclusive-start-key`
+     - `:expression-attribute-values`
+     - `:filter-expression`
+     - `:projection-expression`
+     - `:query-filter`
+     - `:scan-index-forward`
+  - Unsupport
+    - `:expression-attribute-names`
 
 ### scan
 

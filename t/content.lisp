@@ -191,15 +191,103 @@
                                        ("ForumName" . "Amazon DynamoDB"))
                                :condition-expression "ForumName <> :f and Subject <> :s"
                                :expression-attribute-values '((":f" . "Amazon DynamoDB")
-                                                              (":s" . "update multiple items")))
+                                                              (":s" . "Update multiple items")))
         (build-json "\"TableName\":\"Thread\""
                     "\"Item\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]},\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
                     "\"ConditionExpression\":\"ForumName <> :f and Subject <> :s\""
-                    "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"update multiple items\"}}")
+                    "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"Update multiple items\"}}")
         "can return the correct JSON object."))
 
   (subtest "query"
-    (skip 1 "No tests written."))
+    (is-error (query-content dyna :select "SPECIFIC_ATTRIBUTES"
+                                  :attributes-to-get '("ForumName" "Subject")
+                                  :index-name "LastPostIndex"
+                                  :limit 3
+                                  :consistent-read t
+                                  :key-conditions '(("LastPostDateTime" . (("AttributeValueList" . ("20130101" "20130115"))
+                                                                           ("ComparisonOperator" . "BETWEEN")))
+                                                    ("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
+                                                                    ("ComparisonOperator" . "EQ"))))
+                                  :conditional-operator "OR"
+                                  :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
+                                                                ("ComparisonOperator" . "EQ"))))
+                                  :exclusive-start-key '(("ForumName" . "Amazon RDS"))
+                                  :filter-expression "Replies > :num"
+                                  :expression-attribute-values '((":num" . 1))
+                                  :scan-index-forward t
+                                  :return-consumed-capacity "TOTAL")
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :table-name.")
+    (is-error (query-content dyna :table-name "Thread"
+                                  :select "SPECIFIC_ATTRIBUTES"
+                                  :attributes-to-get '("ForumName" "Subject")
+                                  :index-name "LastPostIndex"
+                                  :limit 3
+                                  :consistent-read t
+                                  :conditional-operator "OR"
+                                  :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
+                                                                ("ComparisonOperator" . "EQ"))))
+                                  :exclusive-start-key '(("ForumName" . "Amazon RDS"))
+                                  :filter-expression "Replies > :num"
+                                  :expression-attribute-values '((":num" . 1))
+                                  :scan-index-forward t
+                                  :return-consumed-capacity "TOTAL")
+              '<dyna-incomplete-argumet-error>
+              "can raise the error without :key-conditions.")
+    (print (query-content dyna :table-name "Thread"
+                            :select "SPECIFIC_ATTRIBUTES"
+                            :attributes-to-get '("ForumName" "Subject")
+                            :index-name "LastPostIndex"
+                            :limit 3
+                            :consistent-read t
+                            :key-conditions '(("LastPostDateTime" . (("AttributeValueList" . ("20130101" "20130115"))
+                                                                     ("ComparisonOperator" . "BETWEEN")))
+                                              ("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
+                                                              ("ComparisonOperator" . "EQ"))))
+                            :conditional-operator "OR"
+                            :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
+                                                          ("ComparisonOperator" . "EQ"))))
+                            :exclusive-start-key '(("ForumName" . "Amazon RDS"))
+                            :filter-expression "Replies > :num"
+                            :expression-attribute-values '((":num" . 1))
+                            :scan-index-forward t
+                            :return-consumed-capacity "TOTAL"))
+    (is (query-content dyna :table-name "Thread"
+                            :select "SPECIFIC_ATTRIBUTES"
+                            :attributes-to-get '("ForumName" "Subject")
+                            :index-name "LastPostIndex"
+                            :limit 3
+                            :consistent-read t
+                            :key-conditions '(("LastPostDateTime" . (("AttributeValueList" . ("20130101" "20130115"))
+                                                                     ("ComparisonOperator" . "BETWEEN")))
+                                              ("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
+                                                              ("ComparisonOperator" . "EQ"))))
+                            :conditional-operator "OR"
+                            :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
+                                                          ("ComparisonOperator" . "EQ"))))
+                            :exclusive-start-key '(("ForumName" . "Amazon RDS"))
+                            :filter-expression "Replies > :num"
+                            :expression-attribute-values '((":num" . 1))
+                            :scan-index-forward t
+                            :return-consumed-capacity "TOTAL")
+        (print (build-json "\"TableName\":\"Thread\""
+                    "\"KeyConditions\":{\"LastPostDateTime\":{\"AttributeValueList\":[{\"S\":\"20130101\"},{\"S\":\"20130115\"}],\"ComparisonOperator\":\"BETWEEN\"},\"ForumName\":{\"AttributeValueList\":[{\"S\":\"Amazon DynamoDB\"}]"
+                    "\"ComparisonOperator\":\"EQ\"}}"
+                    "\"ReturnConsumedCapacity\":\"TOTAL\""
+                    "\"AttributesToGet\":[\"ForumName\",\"Subject\"]"
+                    "\"IndexName\":\"LastPostIndex\""
+                    "\"Select\":\"SPECIFIC_ATTRIBUTES\""
+                    "\"Limit\":3"
+                    "\"ConsistentRead\":true"
+                    "\"ConditionalOperator\":\"OR\""
+                    "\"ExclusiveStartKey\":{\"ForumName\":{\"S\":\"Amazon RDS\"}}"
+                    "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}"
+                    "\"FilterExpression\":\"Replies > :num\""
+                    "\"QueryFilter\":{\"Subject\":{\"AttributeValueList\":[{\"S\":\"Update multiple items\"}"
+                    "{\"S\":\"Concurrent reads\"}]"
+                    "\"ComparisonOperator\":\"EQ\"}}"
+                    "\"ScanIndexForward\":true"))
+        "can return the correct JSON object."))
 
   (subtest "scan"
     (skip 1 "No tests written."))

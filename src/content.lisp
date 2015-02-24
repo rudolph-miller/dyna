@@ -3,6 +3,7 @@
   (:use :cl
         :jsown
         :dyna.util
+        :dyna.desc
         :dyna.error
         :dyna.structure)
   (:import-from :alexandria
@@ -132,7 +133,58 @@
           (when expression-attribute-values
             (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))))
 
-(defcontent query () ())
+(defcontent query (&key table-name key-conditions return-consumed-capacity attributes-to-get index-name select
+                        limit consistent-read conditional-operator exclusive-start-key expression-attribute-values
+                        filter-expression projection-expression query-filter scan-index-forward)
+    (table-name key-conditions)
+  (append (list `("TableName" . ,table-name)
+                `("KeyConditions" . ,(add-obj-to-list
+                                      (mapcar #'(lambda (item)
+                                                  (cons (car item)
+                                                        (add-obj-to-list
+                                                         (mapcar #'(lambda (prop)
+                                                                     (if (string= (car prop) "AttributeValueList")
+                                                                         (cons (car prop)
+                                                                               (mapcar #'desc (cdr prop)))
+                                                                         prop))
+                                                                 (cdr item)))))
+                                              key-conditions))))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))
+          (when attributes-to-get
+            (list `("AttributesToGet" . ,attributes-to-get)))
+          (when index-name
+            (list `("IndexName" . ,index-name)))
+          (when select
+            (list `("Select" . ,select)))
+          (when limit
+            (list `("Limit" . ,limit)))
+          (when consistent-read
+            (list `("ConsistentRead" . ,consistent-read)))
+          (when conditional-operator
+            (list `("ConditionalOperator" . ,conditional-operator)))
+          (when exclusive-start-key
+            (list `("ExclusiveStartKey" . ,(add-obj-to-list (build-desc-list exclusive-start-key)))))
+          (when expression-attribute-values
+            (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
+          (when filter-expression
+            (list `("FilterExpression" . ,filter-expression)))
+          (when projection-expression
+            (list `("ProjectionExpression" . ,projection-expression)))
+          (when query-filter
+            (list `("QueryFilter" . ,(add-obj-to-list
+                                      (mapcar #'(lambda (item)
+                                                  (cons (car item)
+                                                        (add-obj-to-list
+                                                         (mapcar #'(lambda (prop)
+                                                                     (if (string= (car prop) "AttributeValueList")
+                                                                         (cons (car prop)
+                                                                               (mapcar #'desc (cdr prop)))
+                                                                         prop))
+                                                                 (cdr item)))))
+                                              query-filter)))))
+          (when scan-index-forward
+            (list `("ScanIndexForward" . ,scan-index-forward)))))
 
 (defcontent scan () ())
 
