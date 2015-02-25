@@ -13,6 +13,8 @@
                 :make-dyna
                 :dyna-credentials
                 :dyna-region)
+  (:import-from :dyna.fetch
+                :fetch)
   (:import-from :dyna.operation
                 :batch-get-item
                 :batch-write-item
@@ -36,6 +38,9 @@
            :make-dyna
            :dyna-credentials
            :dyna-region
+
+           ;; Fetch
+           :fetch
 
            ;; Operation
            :batch-get-item
