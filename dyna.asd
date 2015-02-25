@@ -27,7 +27,8 @@
                :local-time
                :jsown
                :split-sequence
-               :alexandria)
+               :alexandria
+               :closer-mop)
   :components ((:module "src"
                 :components
                 ((:file "dyna" :depends-on ("structure" "operation" "error"))
@@ -38,7 +39,8 @@
                  (:file "fetch" :depends-on ("request" "error"))
                  (:file "content" :depends-on ("structure" "desc"))
                  (:file "operation" :depends-on ("fetch" "content" "structure" "error"))
-                 (:file "structure"))))
+                 (:file "structure")
+                 (:file "table"))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames

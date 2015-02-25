@@ -11,3 +11,4 @@
 (defstruct dyna
   (credentials)
   (region "us-east-1"))
+

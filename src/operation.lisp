@@ -30,7 +30,9 @@
                 (cond
                   ((= status 200)
                    (let ((*result* (parse (octets-to-string result))))
-                     ,@body))
+                     (handler-case (progn ,@body)
+                       (simple-error (e)
+                         (values nil *result* e)))))
                   (t (error '<dyna-request-error> :status status
                                                   :message (octets-to-string result)
                                                   :meta meta))))))))
