@@ -22,8 +22,8 @@
 @export
 @export-accessors
 (defclass <dyna-table-class> (standard-class)
-  ((table-name :type string :initarg :table-name)
-   (dyna :type dyna :initarg :dyna)
+  ((table-name :type (or cons string) :initarg :table-name)
+   (dyna :type (or cons dyna) :initarg :dyna)
    (%synced :type boolean :initform nil :accessor table-synced)))
 
 (defun contains-class-or-subclasses (class target-classes)
@@ -51,11 +51,11 @@
 
 (defmethod initialize-instance :around ((instance <dyna-table-class>) &rest initargs)
   (initialize-around-action instance initargs)
-  (call-next-method))
+  (apply #'call-next-method instance initargs))
 
 (defmethod reinitialize-instance :around ((instance <dyna-table-class>) &rest initargs)
   (initialize-around-action instance initargs)
-  (call-next-method))
+  (apply #'call-next-method instance initargs))
 
 (defmethod initialize-instance :after ((instance <dyna-table-class>) &rest initargs)
   (initialize-after-action instance initargs))
