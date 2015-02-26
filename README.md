@@ -21,9 +21,20 @@ Dyna is a Common Lisp library for AWS DynamoDB.
 ## API
 Most API return multiple values, the formaer is formatted result, and the latter is raw result.
 
+### dyna
+```Lisp
+(make-dyna :credentials (cons "access-key" "secret-key")
+           :region "ap-northeast-1")
+```
+  - `dyna` object is a object for setting up.
+  - `make-dyna` creates `dyna` object.
+  - `:credentials` is a dotted pair of AccessKey and SecretKey.
+  - `:region` is a region of your DynamoDB.
+  - If you want to access you local DynamoDB Local, you can setup `:region "local"` and `(setf *local-port* 8000)`.
+
 ### fetch
 ```Lisp
-(fetch dyna (cons "access-key" "secret-key") "ap-north-east" "ListTables" "{}")
+(fetch dyna (cons "access-key" "secret-key") "ap-northeast-1" "ListTables" "{}")
 => #(...)
 ```
   - returns raw octets of reponse.
