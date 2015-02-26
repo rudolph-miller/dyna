@@ -1,4 +1,7 @@
 # Dyna
+
+[![Build Status](https://travis-ci.org/Rudolph-Miller/dyna.svg)](https://travis-ci.org/Rudolph-Miller/dyna)
+
 Dyna is a Common Lisp library for AWS DynamoDB.
 
 ## Usage
