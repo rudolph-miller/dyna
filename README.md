@@ -7,15 +7,34 @@ Dyna is a Common Lisp library for AWS DynamoDB.
 ## Usage
 
 ```Lisp
-(let ((dyna (make-dyna :credentials (cons (asdf::getenv "AWS_ACCESS_KEY")
-                                          (asdf:getenv "AWS_SECRET_KEY"))
-                 :region "ap-northeast-1")))
-  (put-item dyna :table-name "aliens"
-                 :item (("Name" . "LispAlien") ("Feature" . "They talk Lisp.")))
-  ;; => T
+(defvar *dyna* (make-dyna :credentials (cons (asdf::getenv "AWS_ACCESS_KEY")
+                                             (asdf:getenv "AWS_SECRET_KEY"))
+                 :region "ap-northeast-1"))
+ 
+(defclass thread ()
+  ((forum-name :key-type :hash
+               :attr-name "ForumName"
+               :initarg :forum-name
+               :accessor thread-forum-name)
+   (subject :key-type :range
+            :attr-name "Subject"
+            :initarg :subject
+            :accessor thread-subject))
+  (:dyna *dyna*)
+  (:table-name "Thread")
+  (:metaclass <dyna-table-class>))
 
-  (get-item dyna :table-name "aliens" :key (("Name" . "LispAlien"))))
-  ;; => (("Name" . "LispAlien") ("Feature" . "They talk Lisp."))
+(find-dyna 'thread "Amazon DynamoDB" "Really useful")
+;; => #<THREAD :forum-name "Amazon DynamoDB" :subject "Really useful">
+
+;;; The operations below is the samples of Low Level API.
+
+(put-item *dyna* :table-name "aliens"
+                 :item (("Name" . "LispAlien") ("Feature" . "They talk Lisp.")))
+;; => T
+
+(get-item *dyna* :table-name "aliens" :key (("Name" . "LispAlien"))))
+;; => (("Name" . "LispAlien") ("Feature" . "They talk Lisp."))
 ```
 
 ## API
@@ -32,10 +51,40 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - `:region` is a region of your DynamoDB.
   - If you want to access you local DynamoDB Local, you can setup `:region "local"` and `(setf *local-port* 8000)`.
 
+### <dyna-table-class>
+```Lisp
+(defclass thread ()
+  ((forum-name :key-type :hash
+               :attr-name "ForumName"
+               :initarg :forum-name
+               :accessor thread-forum-name)
+   (subject :key-type :range
+            :attr-name "Subject"
+            :initarg :subject
+            :accessor thread-subject))
+  (:dyna *dyna*)
+  (:table-name "Thread")
+  (:metaclass <dyna-table-class>))
+```
+  - You can create class haveing <dyna-table-class> as `:metaclass`.
+  - `:dyna` can take `dyna` object.
+  - `:table-name` can take table name of DynamoDB's table.
+  - `:key-type` in slot should be `:hash` or `:range` and is the same as DynamoDB's table.
+  - `:attr-name` in slot is AttributeName of Item in DynamoDB's table.
+
+### find-dyna
+```Lisp
+(find-dyna 'thread "Amazon DynamoDB" "Really useful")
+;; => #<THREAD :forum-name "Amazon DynamoDB" :subject "Really useful">
+```
+  - can return a object if matching Item exists.
+
+## Low Level API
+
 ### fetch
 ```Lisp
 (fetch dyna (cons "access-key" "secret-key") "ap-northeast-1" "ListTables" "{}")
-=> #(...)
+;; => #(...)
 ```
   - returns raw octets of reponse.
 
