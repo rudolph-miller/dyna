@@ -3,6 +3,7 @@
   (:use :cl
         :prove
         :dyna
+        :dyna.column
         :dyna.table))
 (in-package :dyna-test.table)
 

@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage dyna.column
   (:use :cl
+        :annot.class
         :dyna)
   (:import-from :closer-mop
                 :validate-superclass
@@ -8,21 +9,12 @@
                 :direct-slot-definition-class
                 :class-direct-slots
                 :slot-definition-name))
-(in-package :dyna.table)
+(in-package :dyna.column)
 
 (syntax:use-syntax :annot)
 
 @export
+@export-accessors
 (defclass <dyna-table-column> (standard-direct-slot-definition)
-  ((key-type :type :keyword :initarg :key-type)
-   (attr-name :type string :initarg :attr-name)))
-
-@export
-(defgeneric key-type (column)
-  (:method ((class <dyna-table-column>))
-    (slot-value class 'key-type)))
-
-@export
-(defgeneric attr-name (column)
-  (:method ((class <dyna-table-column>))
-    (slot-value class 'attr-name)))
+  ((key-type :type :keyword :initarg :key-type :accessor key-type)
+   (attr-name :type string :initarg :attr-name :accessor attr-name)))

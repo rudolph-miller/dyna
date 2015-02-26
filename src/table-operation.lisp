@@ -3,9 +3,10 @@
   (:use :cl
         :dyna.error
         :dyna.operation
+        :dyna.column 
         :dyna.table)
   (:import-from :jsown
-   :val)
+                :val)
   (:import-from :closer-mop
                 :class-direct-slots
                 :slot-definition-name))
