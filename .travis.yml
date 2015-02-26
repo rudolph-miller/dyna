@@ -14,9 +14,14 @@ install:
   # Install cl-travis.
   - curl https://raw.githubusercontent.com/luismbo/cl-travis/master/install.sh | bash
 
-  # Install dynamodb-local and start it.
+  # Install dynamodb-local.
   - mkdir /tmp/dynamodb
   - wget -O - http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest | tar xz --directory /tmp/dynamodb
+
+before_script:
+  # Start dynamodb-local
+  - mv /tmp/dynamodb/* /tmp/dynamodb/dynamodb
+  - java -Djava.library.path=/tmp/dynamodb/dynamodb/DynamoDBLocal_lib -jar /tmp/dynamodb/dynamodb/DynamoDBLocal.jar -inMemory &
 
 script:
   - cl -l prove -e '(or (prove:run :dyna-test) (uiop:quit -1))'
