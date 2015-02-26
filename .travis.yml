@@ -20,8 +20,7 @@ install:
 
 before_script:
   # Start dynamodb-local
-  - mv /tmp/dynamodb/* /tmp/dynamodb/dynamodb
-  - java -Djava.library.path=/tmp/dynamodb/dynamodb/DynamoDBLocal_lib -jar /tmp/dynamodb/dynamodb/DynamoDBLocal.jar -inMemory &
+  - java -Djava.library.path=/tmp/dynamodb/DynamoDBLocal_lib -jar /tmp/dynamodb/DynamoDBLocal.jar -inMemory &
 
 script:
   - cl -l prove -e '(or (prove:run :dyna-test) (uiop:quit -1))'
