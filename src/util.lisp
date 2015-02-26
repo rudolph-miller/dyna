@@ -103,3 +103,10 @@
 @export
 (defun operation->opration-for-fetch (op)
   (format nil "~{~:(~a~)~}" (split-sequence #\- (symbol-name op))))
+
+@export
+(defun class-inherit-p (target parent)
+  (not (null
+        (member parent
+                (c2mop:class-direct-superclasses target)
+                :test #'eq))))

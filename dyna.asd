@@ -40,7 +40,9 @@
                  (:file "content" :depends-on ("structure" "desc"))
                  (:file "operation" :depends-on ("fetch" "content" "structure" "error"))
                  (:file "structure")
-                 (:file "table"))))
+                 (:file "column")
+                 (:file "table" :depends-on ("structure" "column"))
+                 (:file "table-operation" :depends-on ("table" "operation" "error")))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames

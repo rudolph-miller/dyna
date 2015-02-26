@@ -20,7 +20,9 @@
                  (:test-file "dyna")
                  (:test-file "request")
                  (:test-file "fetch")
-                 (:test-file "content"))))
+                 (:test-file "content")
+                 (:test-file "table")
+                 (:test-file "table-operation"))))
 
   :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)

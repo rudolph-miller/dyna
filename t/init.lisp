@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage dyna-test.init
-  (:use :cl)
+  (:use :cl
+        :dyna)
   (:import-from :local-time
                 :parse-timestring
                 :*default-timezone*
@@ -11,6 +12,10 @@
 (syntax:use-syntax :annot)
 
 (setf *default-timezone* +utc-zone+)
+
+@export
+(defvar *dyna* (make-dyna :credentials (cons "DYNA_TEST_ACCESS_KEY" "DYNA_TEST_SECRET_KEY")
+                          :region "local"))
 
 (defstruct clock
   (year 1990)
@@ -38,3 +43,15 @@
 @export
 (defun build-json (&rest lst)
   (format nil "{~{~a~^,~}}" lst))
+
+@export
+(defun init-dynamo-local ()
+  (when (find "Thread" (list-tables *dyna*) :test #'equal)
+    (delete-table *dyna* :table-name "Thread"))
+  (create-table *dyna* :table-name "Thread"
+                       :key-schema '((("AttributeName" . "ForumName") ("KeyType" . "HASH"))
+                                     (("AttributeName" . "Subject") ("KeyType" . "RANGE")))
+                       :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                (("AttributeName" . "Subject") ("AttributeType" . "S")))
+                       :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                 ("WriteCapacityUnits" . 5))))

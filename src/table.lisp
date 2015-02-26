@@ -1,11 +1,11 @@
 (in-package :cl-user)
 (defpackage dyna.table
   (:use :cl
-        :dyna
+        :annot.class
+        :dyna.util
         :dyna.operation
-        :dyna.structure)
-  (:import-from :alexandria
-                :ensure-list)
+        :dyna.structure
+        :dyna.column)
   (:import-from :closer-mop
                 :validate-superclass
                 :standard-direct-slot-definition
@@ -16,42 +16,52 @@
 
 (syntax:use-syntax :annot)
 
-;; Column
-
-(defclass <dyna-table-column> (standard-direct-slot-definition)
-  ((key-type :type :keyword :initarg :key-type)
-   (attr-name :type string :initarg :attr-name)))
-
-(defgeneric key-type (column)
-  (:method ((class <dyna-table-column>))
-    (slot-value class 'key-type)))
-
-(defgeneric attr-name (column)
-  (:method ((class <dyna-table-column>))
-    (slot-value class 'attr-name)))
-
-;; Table
-
 @export
 (defclass <dyna-class> () ())
 
 @export
+@export-accessors
 (defclass <dyna-table-class> (standard-class)
   ((table-name :type string :initarg :table-name)
-   (dyna :type dyna :initarg :dyna)))
+   (dyna :type dyna :initarg :dyna)
+   (%synced :type boolean :initform nil :accessor table-synced)))
 
-(defmethod initialize-instance :around ((class <dyna-table-class>) &rest initargs)
-  (initialize-action initargs)
-  (call-next-method))
+(defun contains-class-or-subclasses (class target-classes)
+  (let ((class (if (typep class 'class)
+                   class
+                   (find-class class))))
+    (find-if (lambda (target-class)
+                 (and target-class
+                      (or (eq target-class class)
+                          (class-inherit-p target-class class))))
+             target-classes)))
 
-(defun initialize-action (initargs)
+(defun initialize-around-action (instance initargs)
+  (declare (ignore instance))
   (when (getf initargs :dyna)
     (setf (getf initargs :dyna)
-          (eval (car (getf initargs :dyna))))))
+          (eval (car (getf initargs :dyna)))))
+  (unless (contains-class-or-subclasses (find-class '<dyna-class>) (getf initargs :direct-superclasses))
+    (setf (getf initargs :direct-superclasses)
+          (cons (find-class '<dyna-class>) (getf initargs :direct-superclasses)))))
 
-(defmethod reinitialize-instance :around ((class <dyna-table-class>) &rest initargs)
-  (initialize-action initargs)
+(defun initialize-after-action (instance initargs)
+  (declare (ignore initargs))
+  (setf (slot-value instance '%synced) nil))
+
+(defmethod initialize-instance :around ((instance <dyna-table-class>) &rest initargs)
+  (initialize-around-action instance initargs)
   (call-next-method))
+
+(defmethod reinitialize-instance :around ((instance <dyna-table-class>) &rest initargs)
+  (initialize-around-action instance initargs)
+  (call-next-method))
+
+(defmethod initialize-instance :after ((instance <dyna-table-class>) &rest initargs)
+  (initialize-after-action instance initargs))
+
+(defmethod reinitialize-instance :after ((instance <dyna-table-class>) &rest initargs)
+  (initialize-after-action instance initargs))
 
 (defmethod validate-superclass ((class <dyna-table-class>) (super standard-class))
   t)
@@ -59,14 +69,17 @@
 (defmethod direct-slot-definition-class ((class <dyna-table-class>) &key)
   '<dyna-table-column>)
 
+@export
 (defgeneric table-name (class)
   (:method ((class <dyna-table-class>))
     (car (slot-value class 'table-name))))
 
+@export
 (defgeneric table-hash-key (class)
   (:method (class)
     (find-key-type-key class :hash)))
 
+@export
 (defgeneric table-range-key (class)
   (:method (class)
     (find-key-type-key class :range)))
@@ -77,29 +90,7 @@
   (:method ((class <dyna-table-class>) type)
     (find type (class-direct-slots class) :key #'key-type)))
 
+@export
 (defgeneric table-dyna (class)
   (:method ((class <dyna-table-class>))
     (slot-value class 'dyna)))
-
-(defun build-obj (class result)
-  (loop with obj = (make-instance class)
-        for slot in (class-direct-slots class)
-        do (setf (slot-value obj (slot-definition-name slot))
-                 (cdr (assoc (attr-name slot) result)))
-        finally (return obj)))
-
-;; Operation
-
-(defgeneric find-dyna (class &rest values)
-  (:method ((class symbol) &rest values)
-    (apply #'find-dyna (find-class class) values))
-  (:method ((class <dyna-table-class>) &rest values)
-    (let ((hash-key (table-hash-key class))
-          (range-key (table-range-key class)))
-      (multiple-value-bind (result raw-result error)
-          (get-item (table-dyna class) :table-name (table-name class)
-                                       :key (append (list (cons (attr-name hash-key) (car values)))
-                                                    (when range-key
-                                                      (list (cons (attr-name range-key) (cadr values)))))
-                                       :return-consumed-capacity "TOTAL")
-        (values (build-obj class result) raw-result error)))))

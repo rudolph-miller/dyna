@@ -32,3 +32,12 @@
      (format stream
              "You must complete ~{:~a~^,~}."
              (slot-value condition 'args)))))
+
+@export
+(define-condition <dyna-incompatible-table-schema> (<dyna-error>)
+  ((table :initarg :table))
+  (:report
+   (lambda (condition stream)
+     (format stream
+             "Table:~a is incompatible with the table schema in DynamoDB."
+             (slot-value condition 'table)))))
