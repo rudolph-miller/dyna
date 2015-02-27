@@ -91,7 +91,7 @@
 @export
 (defgeneric migrate-dyna-table (table)
   (:method ((table symbol))
-    (migrate-dyna (find-class table)))
+    (migrate-dyna-table (find-class table)))
   (:method ((table <dyna-table-class>))
     (let ((hash-key (table-hash-key table))
           (range-key (table-range-key table))
