@@ -178,6 +178,28 @@
               :attr-name "Subject"
               :attr-type :S
               :initarg :subject
+              :accessor thread-subject)
+     (tags :attr-name "Tags"
+           :initarg :tags
+           :accessor thread-tags))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 5))
+    (:metaclass <dyna-table-class>))
+
+  (ok (not (migrate-dyna-table 'thread))
+      "can return NIL when just not key slots changed.")
+
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
               :accessor thread-subject))
     (:dyna *dyna*)
     (:table-name "Thread")
