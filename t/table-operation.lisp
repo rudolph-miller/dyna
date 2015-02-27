@@ -30,6 +30,19 @@
 
 (init-dynamo-local)
 
+(subtest "table-exist-p"
+  (defclass inexist-table ()
+    ()
+    (:dyna *dyna*)
+    (:table-name "InexistTable")
+    (:metaclass <dyna-table-class>))
+
+  (ok (not (table-exist-p 'inexist-table))
+      "can return NIL if table doesn't exist.")
+
+  (ok (table-exist-p 'thread)
+      "can return T if table exists."))
+
 (subtest "describe-dyna"
   (is (filter (describe-dyna 'thread) "Table" "TableName")
       "Thread"

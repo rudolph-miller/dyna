@@ -15,6 +15,15 @@
 (syntax:use-syntax :annot)
 
 @export
+(defgeneric table-exist-p (table)
+  (:method ((table symbol))
+    (table-exist-p (find-class table)))
+  (:method ((table <dyna-table-class>))
+    (if (find (table-name table) (list-tables (table-dyna table)) :test #'equal)
+        t nil)))
+    
+
+@export
 (defgeneric describe-dyna (table)
   (:method ((table symbol))
     (describe-dyna (find-class table)))
