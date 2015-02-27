@@ -9,6 +9,7 @@
   (:import-from :jsown
                 :val)
   (:import-from :alexandria
+                :length=
                 :make-keyword)
   (:import-from :closer-mop
                 :class-direct-slots
@@ -68,9 +69,11 @@
   (flet ((find-attr-type (name)
            (let ((result (find name schema :test #'equal :key #'(lambda (obj) (val obj "AttributeName")))))
              (when result (val result "AttributeType")))))
-    (loop for slot in (class-direct-slots table)
-          always (and (slot-boundp slot 'attr-type)
-                      (eq (attr-type slot) (make-keyword (find-attr-type (attr-name slot))))))))
+    (let ((slots (class-direct-slots table)))
+      (and (length= slots schema)
+           (loop for slot in slots
+                 always (and (slot-boundp slot 'attr-type)
+                             (eq (attr-type slot) (make-keyword (find-attr-type (attr-name slot))))))))))
 
 (defun equal-throughput-p (schema table)
   (and (= (val schema "ReadCapacityUnits") (getf (table-throughput table) :read))
@@ -93,9 +96,9 @@
   (:method ((table symbol))
     (migrate-dyna-table (find-class table)))
   (:method ((table <dyna-table-class>))
-  (if (table-exist-p table)
-      (update-dyna-table table)
-      (create-dyna-table table))))
+    (if (table-exist-p table)
+        (update-dyna-table table)
+        (create-dyna-table table))))
 
 @export
 (defgeneric create-dyna-table (table)
@@ -106,21 +109,37 @@
           (range-key (table-range-key table))
           (throughput (table-throughput table)))
       (create-table (table-dyna table)
-                   :table-name (table-name table)
-                   :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
-                                       (when range-key
-                                         `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
-                   :attribute-definitions (loop for slot in (class-direct-slots table)
-                                                collecting `(("AttributeName" . ,(attr-name slot))
-                                                             ("AttributeType" . ,(symbol-name (attr-type slot)))))
-                   :provisioned-throughput `(("ReadCapacityUnits" . ,(getf throughput :read))
-                                             ("WriteCapacityUnits" . ,(getf throughput :write)))))))
+                    :table-name (table-name table)
+                    :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
+                                        (when range-key
+                                          `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
+                    :attribute-definitions (loop for slot in (class-direct-slots table)
+                                                 collecting `(("AttributeName" . ,(attr-name slot))
+                                                              ("AttributeType" . ,(symbol-name (attr-type slot)))))
+                    :provisioned-throughput `(("ReadCapacityUnits" . ,(getf throughput :read))
+                                              ("WriteCapacityUnits" . ,(getf throughput :write)))))))
 
 @export
 (defgeneric update-dyna-table (table)
   (:method ((table symbol))
     (update-dyna-table (find-class table)))
-  (:method ((table <dyna-table-class>))))
+  (:method ((table <dyna-table-class>))
+    (let* ((table-definition (val (describe-dyna table) "Table"))
+           (attr-definitions (val table-definition "AttributeDefinitions"))
+           (provisioned-throughput (val table-definition "ProvisionedThroughput"))
+           (throughput (table-throughput table))
+           (attr-types-changed-p (not (equal-attr-types-p attr-definitions table)))
+           (throughput-changed-p (not (equal-throughput-p provisioned-throughput table))))
+      (when (or attr-types-changed-p throughput-changed-p)
+        (update-table (table-dyna table)
+                      :table-name (table-name table)
+                      :attribute-definitions (unless (equal-attr-types-p attr-definitions table)
+                                               (loop for slot in (class-direct-slots table)
+                                                     collecting `(("AttributeName" . ,(attr-name slot))
+                                                                  ("AttributeType" . ,(symbol-name (attr-type slot))))))
+                      :provisioned-throughput (unless (equal-throughput-p provisioned-throughput table)
+                                                `(("ReadCapacityUnits" . ,(getf throughput :read))
+                                                  ("WriteCapacityUnits" . ,(getf throughput :write)))))))))
 
 @export
 (defgeneric find-dyna (table &rest values)

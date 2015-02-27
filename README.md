@@ -66,7 +66,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
             :accessor thread-subject))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:thread (:read 5 :wirte 5)
+  (:throughput (:read 5 :wirte 5)
   (:metaclass <dyna-table-class>))
 ```
   - You can create class haveing <dyna-table-class> as `:metaclass`.
@@ -83,6 +83,41 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ;; => T
 ```
   - can return T if the table is successfully created.
+
+### update-dyna-table
+```Lisp
+(defclass thread ()
+  ((forum-name :key-type :hash
+               :attr-name "ForumName"
+               :attr-type :S
+               :initarg :forum-name
+               :accessor thread-forum-name)
+   (subject :key-type :range
+            :attr-name "Subject"
+            :attr-type :S
+            :initarg :subject
+            :accessor thread-subject))
+  (:dyna *dyna*)
+  (:table-name "Thread")
+  (:throughput (:read 10 :wirte 10)
+  (:metaclass <dyna-table-class>))
+(update-dyna-table 'thread)
+;; => T
+
+(update-dyna-table 'thread)
+;; => NIL
+```
+  - can return T if the table is successfully updated.
+  - can return NIL if the table has no changs.
+
+### migrate-dyna-table
+```Lisp
+(migrate-dyna-table 'thread)
+=> T
+```
+  - can create the table if the table doesn't exist.
+  - can update the table if the table definitions are chagned.
+  - can return NIL if the table has no changs.
 
 ### find-dyna
 ```Lisp

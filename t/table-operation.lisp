@@ -30,7 +30,7 @@
             :accessor thread-subject))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:throuput (:read 5 :write 5))
+  (:throuput (:read 4 :write 5))
   (:metaclass <dyna-table-class>))
 
 (defclass inexist-table ()
@@ -155,20 +155,37 @@
   (:throuput (:read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
-(subtest "create-dyna-table"
+(subtest "migrate-dyna-table"
   (delete-table *dyna* :table-name "Thread")
   (ok (not (table-exist-p 'thread))
       "Table: Thread doesn't exist now.")
 
-  (create-dyna-table 'thread)
+  (migrate-dyna-table 'thread)
 
   (ok (table-exist-p 'thread)
       "Table: Thread exists now.")
 
-  (is-error (create-dyna-table 'thread)
-            '<dyna-request-error>
-            "can raise the error if the table already exists."))
+  (ok (not (migrate-dyna-table 'thread))
+      "can return NIL when nothing changed.")
 
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 3))
+    (:metaclass <dyna-table-class>))
+
+  (ok (migrate-dyna-table 'thread)
+      "can update the table if the definitions are changed."))
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")
@@ -198,9 +215,9 @@
       "can return NIL with no matching."))
 
 (subtest "select-dyna"
-    (is (mapcar #'thread-forum-name (select-dyna 'thread))
-        '("Amazon DynamoDB" "Amazon RDS")
-        :test #'(lambda (a b) (set-equal a b :test #'equal))
-        "can return the correct objects."))
+  (is (mapcar #'thread-forum-name (select-dyna 'thread))
+      '("Amazon DynamoDB" "Amazon RDS")
+      :test #'(lambda (a b) (set-equal a b :test #'equal))
+      "can return the correct objects."))
 
 (finalize)
