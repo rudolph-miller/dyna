@@ -22,7 +22,9 @@
                 :split-sequence)
   (:import-from :jsown
                 :new-js
-                :do-json-keys)
+                :do-json-keys
+                :val
+                :keyp)
   (:import-from :dyna.desc
                 :desc))
 (in-package :dyna.util)
@@ -110,3 +112,7 @@
         (member parent
                 (c2mop:class-direct-superclasses target)
                 :test #'eq))))
+
+@export
+(defun safety-val (object key)
+  (when (keyp object key) (val object key)))

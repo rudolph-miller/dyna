@@ -158,13 +158,13 @@
           (range-key (table-range-key table)))
       (when (and range-key (null (cdr values)))
         (error '<dyna-incomplete-argumet-error> :args '(:range-key)))
-      (multiple-value-bind (result raw-result error)
+      (multiple-value-bind (result raw-result)
           (get-item (table-dyna table) :table-name (table-name table)
                                        :key (append (list (cons (attr-name hash-key) (car values)))
                                                     (when range-key
                                                       (list (cons (attr-name range-key) (cadr values)))))
                                        :return-consumed-capacity "TOTAL")
-        (values (build-dyna-table-obj table result) raw-result error)))))
+        (values (build-dyna-table-obj table result) raw-result)))))
 
 @export
 (defgeneric select-dyna (table &rest args)
@@ -172,7 +172,7 @@
     (apply #'select-dyna (find-class table) args))
   (:method ((table <dyna-table-class>) &rest args)
     (declare (ignore args))
-    (multiple-value-bind (result raw-result error)
+    (multiple-value-bind (result raw-result)
         (scan (table-dyna table) :table-name (table-name table)
                                  :projection-expression (table-projection-expression table))
       (values (mapcar #'(lambda (item)
@@ -193,3 +193,21 @@
                             when (slot-boundp obj name)
                               collecting (cons (attr-name slot)
                                                (slot-value obj name)))))))
+
+
+@export
+(defgeneric delete-dyna (obj)
+  (:method ((obj <dyna-class>))
+    (flet ((get-value-if-bounded (object slot)
+             (when (slot-boundp object slot) (slot-value object slot))))
+      (let* ((table (class-of obj))
+            (hash-key (table-hash-key table))
+            (range-key (table-range-key table)))
+        (sync-table table)
+        (delete-item (table-dyna table)
+                     :table-name (table-name table)
+                     :key (append (list (cons (attr-name hash-key)
+                                              (get-value-if-bounded obj (slot-definition-name hash-key))))
+                                  (when range-key
+                                    (list (cons (attr-name range-key)
+                                                (get-value-if-bounded obj (slot-definition-name range-key)))))))))))

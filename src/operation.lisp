@@ -30,9 +30,7 @@
                 (cond
                   ((= status 200)
                    (let ((*result* (parse (octets-to-string result))))
-                     (handler-case (progn ,@body)
-                       (simple-error (e)
-                         (values nil *result* e)))))
+                     ,@body))
                   (t (error '<dyna-request-error> :status status
                                                   :message (octets-to-string result)
                                                   :meta meta))))))))
@@ -40,7 +38,7 @@
 (defoperation batch-get-item
   (values (let ((result))
             (do-json-keys (key val)
-                          (val *result* "Responses")
+                          (safety-val *result* "Responses")
               (push (cons key
                           (mapcar #'(lambda (item)
                                       (parse-result-item item))
@@ -65,20 +63,20 @@
   *result*)
 
 (defoperation get-item
-  (values (parse-result-item (val *result* "Item")) *result*))
+  (values (parse-result-item (safety-val *result* "Item")) *result*))
 
 (defoperation list-tables
-  (values (val *result* "TableNames") *result*))
+  (values (safety-val *result* "TableNames") *result*))
 
 (defoperation put-item
   (values t *result*))
 
 (defoperation query
-  (values (mapcar #'parse-result-item (val *result* "Items"))
+  (values (mapcar #'parse-result-item (safety-val *result* "Items"))
           *result*))
 
 (defoperation scan
-  (values (mapcar #'parse-result-item (val *result* "Items"))
+  (values (mapcar #'parse-result-item (safety-val *result* "Items"))
           *result*))
 
 (defoperation update-item
