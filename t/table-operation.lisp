@@ -17,7 +17,6 @@
 (diag "dyna-test.table")
 
 (setf (find-class 'thread) nil)
-
 (defclass thread ()
   ((forum-name :key-type :hash
                :attr-name "ForumName"
@@ -109,6 +108,28 @@
               :accessor thread-subject))
     (:dyna *dyna*)
     (:table-name "Thread")
+    (:throuput (:read 1 :write 1))
+    (:metaclass <dyna-table-class>))
+
+  (is-error (sync-table (find-class 'thread))
+            '<dyna-incompatible-table-schema>
+            "can raise the error with the incompatible throughput.")
+
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 5))
     (:metaclass <dyna-table-class>))
 
   (ok (sync-table (find-class 'thread))
@@ -116,6 +137,34 @@
 
   (ok (table-synced (find-class 'thread))
       "Slot %synced is now T."))
+
+(setf (find-class 'thread) nil)
+(defclass thread ()
+  ((forum-name :key-type :hash
+               :attr-name "ForumName"
+               :attr-type :S
+               :initarg :forum-name
+               :accessor thread-forum-name)
+   (subject :key-type :range
+            :attr-name "Subject"
+            :attr-type :S
+            :initarg :subject
+            :accessor thread-subject))
+  (:dyna *dyna*)
+  (:table-name "Thread")
+  (:throuput (:read 5 :write 5))
+  (:metaclass <dyna-table-class>))
+
+(subtest "migrate-dyna"
+  (delete-table *dyna* :table-name "Thread")
+  (ok (not (table-exist-p 'thread))
+      "Table: Thread doesn't exist now.")
+
+  (migrate-dyna 'thread)
+
+  (ok (table-exist-p 'thread)
+      "Table: Thread exists now."))
+
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")

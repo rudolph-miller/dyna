@@ -1,6 +1,7 @@
 (in-package :cl-user)
 (defpackage dyna.table-operation
   (:use :cl
+        :dyna.util
         :dyna.error
         :dyna.operation
         :dyna.column 
@@ -42,8 +43,11 @@
       (error '<dyna-inexist-table> :table (table-name table)))
     (let* ((table-definition (val (describe-dyna table) "Table"))
            (key-schema (val table-definition "KeySchema"))
-           (attr-definitions (val table-definition "AttributeDefinitions")))
-      (unless (and (equal-key-schema-p key-schema table) (equal-attr-types-p attr-definitions table))
+           (attr-definitions (val table-definition "AttributeDefinitions"))
+           (throughput (val table-definition "ProvisionedThroughput")))
+      (unless (and (equal-key-schema-p key-schema table)
+                   (equal-attr-types-p attr-definitions table)
+                   (equal-throughput-p throughput table))
         (error '<dyna-incompatible-table-schema> :table (table-name table)))
       (setf (table-synced table) t))))
 
@@ -68,6 +72,10 @@
           always (and (slot-boundp slot 'attr-type)
                       (eq (attr-type slot) (make-keyword (find-attr-type (attr-name slot))))))))
 
+(defun equal-throughput-p (schema table)
+  (and (= (val schema "ReadCapacityUnits") (getf (table-throughput table) :read))
+       (= (val schema "WriteCapacityUnits") (getf (table-throughput table) :write))))
+
 (defun build-dyna-table-obj (table result)
   (when result
     (loop with obj = (make-instance table)
@@ -79,6 +87,25 @@
 (defun table-projection-expression (table)
   (format nil "~{~a~^,~}"
           (mapcar #'attr-name (class-direct-slots table))))
+
+@export
+(defgeneric migrate-dyna (table)
+  (:method ((table symbol))
+    (migrate-dyna (find-class table)))
+  (:method ((table <dyna-table-class>))
+    (let ((hash-key (table-hash-key table))
+          (range-key (table-range-key table))
+          (throughput (table-throughput table)))
+      (create-table (table-dyna table)
+                   :table-name (table-name table)
+                   :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
+                                       (when range-key
+                                         `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
+                   :attribute-definitions (loop for slot in (class-direct-slots table)
+                                                collecting `(("AttributeName" . ,(attr-name slot))
+                                                             ("AttributeType" . ,(symbol-name (attr-type slot)))))
+                   :provisioned-throughput `(("ReadCapacityUnits" . ,(getf throughput :read))
+                                             ("WriteCapacityUnits" . ,(getf throughput :write)))))))
 
 @export
 (defgeneric find-dyna (table &rest values)
@@ -107,7 +134,7 @@
     (declare (ignore args))
     (multiple-value-bind (result raw-result error)
         (scan (table-dyna table) :table-name (table-name table)
-              :projection-expression (table-projection-expression table))
+                                 :projection-expression (table-projection-expression table))
       (values (mapcar #'(lambda (item)
                           (build-dyna-table-obj table item))
                       result)
