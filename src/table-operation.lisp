@@ -63,6 +63,10 @@
                    (cdr (assoc (attr-name slot) result :test #'equal)))
           finally (return obj))))
 
+(defun table-projection-expression (table)
+  (format nil "~{~a~^,~}"
+          (mapcar #'attr-name (class-direct-slots table))))
+
 @export
 (defgeneric find-dyna (table &rest values)
   (:method ((table symbol) &rest values)
@@ -80,3 +84,19 @@
                                                       (list (cons (attr-name range-key) (cadr values)))))
                                        :return-consumed-capacity "TOTAL")
         (values (build-dyna-table-obj table result) raw-result error)))))
+
+
+@export
+(defgeneric select-dyna (table &rest args)
+  (:method ((table symbol) &rest args)
+    (apply #'select-dyna (find-class table) args))
+  (:method ((table <dyna-table-class>) &rest args)
+    (declare (ignore args))
+    (multiple-value-bind (result raw-result error)
+        (scan (table-dyna table) :table-name (table-name table)
+              :projection-expression (table-projection-expression table))
+      (values (mapcar #'(lambda (item)
+                          (build-dyna-table-obj table item))
+                      result)
+              raw-result
+              error))))

@@ -7,7 +7,9 @@
         :dyna
         :dyna.error
         :dyna.table
-        :dyna.table-operation))
+        :dyna.table-operation)
+  (:import-from :alexandria
+                :set-equal))
 (in-package :dyna-test.table-operation)
 
 (plan nil)
@@ -95,6 +97,11 @@
                           ("Subject" . "Really useful")
                           ("Tags" . ("Multiple Items" "HelpMe"))))
 
+(put-item  *dyna* :table-name "Thread"
+                  :item '(("ForumName" . "Amazon RDS")
+                          ("Subject" . "Scalable")
+                          ("Tags" . ("How" "Easy"))))
+
 (subtest "find-dyna"
   (let ((result (find-dyna 'thread "Amazon DynamoDB" "Really useful")))
     (is-type result
@@ -112,5 +119,10 @@
   (ok (not (find-dyna 'thread "NO FORUM NAME" "NO SUBJECT"))
       "can return NIL with no matching."))
 
+(subtest "select-dyna"
+    (is (mapcar #'thread-forum-name (select-dyna 'thread))
+        '("Amazon DynamoDB" "Amazon RDS")
+        :test #'(lambda (a b) (set-equal a b :test #'equal))
+        "can return the correct objects."))
 
 (finalize)
