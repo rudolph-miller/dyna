@@ -5,6 +5,7 @@
         :prove
         :dyna-test.init
         :dyna
+        :dyna.error
         :dyna.table
         :dyna.table-operation))
 (in-package :dyna-test.table-operation)
@@ -28,15 +29,15 @@
   (:table-name "Thread")
   (:metaclass <dyna-table-class>))
 
+(defclass inexist-table ()
+  ()
+  (:dyna *dyna*)
+  (:table-name "InexistTable")
+  (:metaclass <dyna-table-class>))
+
 (init-dynamo-local)
 
 (subtest "table-exist-p"
-  (defclass inexist-table ()
-    ()
-    (:dyna *dyna*)
-    (:table-name "InexistTable")
-    (:metaclass <dyna-table-class>))
-
   (ok (not (table-exist-p 'inexist-table))
       "can return NIL if table doesn't exist.")
 
@@ -51,6 +52,9 @@
 (subtest "sync-table"
   (ok (not (table-synced (find-class 'thread)))
       "Slot %synced is first NIL.")
+
+  (is-error (sync-table (find-class 'inexist-table))
+            '<dyna-inexist-table>)
 
   (setf (find-class 'thread) nil)
   (defclass thread ()

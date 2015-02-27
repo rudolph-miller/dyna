@@ -34,6 +34,8 @@
 (defgeneric sync-table (table)
   (:method ((table <dyna-table-class>))
     (when (table-synced table) (return-from sync-table t))
+    (unless (table-exist-p table)
+      (error '<dyna-inexist-table> :table (table-name table)))
     (let* ((table-definition (val (describe-dyna table) "Table"))
            (key-schema (val table-definition "KeySchema")))
       (unless (equal-key-schema-p key-schema table)

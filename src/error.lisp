@@ -39,5 +39,15 @@
   (:report
    (lambda (condition stream)
      (format stream
-             "Table:~a is incompatible with the table schema in DynamoDB."
+             "Table: ~a is incompatible with the table schema in DynamoDB."
+             (slot-value condition 'table)))))
+
+
+@export
+(define-condition <dyna-inexist-table> (<dyna-error>)
+  ((table :initarg :table))
+  (:report
+   (lambda (condition stream)
+     (format stream
+             "Table: ~a doesn't exists in DynamoDB"
              (slot-value condition 'table)))))
