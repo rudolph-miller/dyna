@@ -23,6 +23,8 @@
                :attr-type :S
                :initarg :forum-name
                :accessor thread-forum-name)
+   (a :initarg :a
+      :attr-name "a")
    (subject :key-type :range
             :attr-name "Subject"
             :attr-type :S
@@ -243,13 +245,48 @@
       "can return the correct objects."))
 
 (subtest "save-dyna"
-  (let ((object (make-instance 'thread :forum-name "Amazon S3" :subject "Limiration")))
-    (save-dyna object)
-    (is (find-dyna 'thread "Amazon S3" "Limiration")
-        object
-        :test #'(lambda (a b) (equal (thread-forum-name a)
-                                     (thread-forum-name b)))
-        "can correctly insert an object."))
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (tags :attr-name "tags"
+           :initarg :tags
+           :accessor thread-tags))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 3))
+    (:metaclass <dyna-table-class>))
+
+  (migrate-dyna-table 'thread)
+
+  (flet ((thread-equal (a b)
+           (and (equal (thread-forum-name a)
+                       (thread-forum-name b))
+                (set-equal (thread-tags a) (thread-tags b) :test #'equal))))
+
+    (let ((object (make-instance 'thread :forum-name "Amazon S3" :subject "Limiration" :tags '("AWS"))))
+      (save-dyna object)
+
+      (is (find-dyna 'thread "Amazon S3" "Limiration")
+          object
+          :test #'thread-equal
+          "can correctly insert the object.")
+
+      (setf (thread-tags object) '("AWS" "S3"))
+      (save-dyna object)
+
+      (is (find-dyna 'thread "Amazon S3" "Limiration")
+          object
+          :test #'thread-equal
+          "can correctly update the object.")))
 
   (is-error (save-dyna (make-instance 'thread))
             '<dyna-incomplete-argumet-error>

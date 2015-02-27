@@ -121,8 +121,7 @@
     (create-dyna-table (find-class table)))
   (:method ((table <dyna-table-class>))
     (let ((hash-key (table-hash-key table))
-          (range-key (table-range-key table))
-          (throughput (table-throughput table)))
+          (range-key (table-range-key table)))
       (create-table (table-dyna table)
                     :table-name (table-name table)
                     :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
@@ -183,9 +182,10 @@
               error))))
 
 @export
-(defgeneric insert-dyna (obj)
+(defgeneric save-dyna (obj)
   (:method ((obj <dyna-class>))
     (let ((table (class-of obj)))
+      (sync-table table)
       (put-item (table-dyna table)
                 :table-name (table-name table)
                 :item (loop for slot in (class-direct-slots table)
@@ -193,8 +193,3 @@
                             when (slot-boundp obj name)
                               collecting (cons (attr-name slot)
                                                (slot-value obj name)))))))
-
-@export
-(defgeneric save-dyna (obj)
-  (:method ((obj <dyna-class>))
-    (insert-dyna obj)))
