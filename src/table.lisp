@@ -22,8 +22,9 @@
 @export
 @export-accessors
 (defclass <dyna-table-class> (standard-class)
-  ((table-name :type (or cons string) :initarg :table-name)
-   (dyna :type (or cons dyna) :initarg :dyna)
+  ((table-name :type (or cons string) :initarg :table-name :accessor table-name)
+   (dyna :type (or cons dyna) :initarg :dyna :accessor table-dyna)
+   (throughput :type cons :initarg :throuput :accessor table-throughput)
    (%synced :type boolean :initform nil :accessor table-synced)))
 
 (defun contains-class-or-subclasses (class target-classes)
@@ -38,12 +39,18 @@
 
 (defun initialize-around-action (instance initargs)
   (declare (ignore instance))
-  (when (getf initargs :dyna)
-    (setf (getf initargs :dyna)
-          (eval (car (getf initargs :dyna)))))
-  (unless (contains-class-or-subclasses (find-class '<dyna-class>) (getf initargs :direct-superclasses))
-    (setf (getf initargs :direct-superclasses)
-          (cons (find-class '<dyna-class>) (getf initargs :direct-superclasses)))))
+  (flet ((set-car (list key)
+           (when (getf list key)
+             (setf (getf list key)
+                   (car (getf list key))))))
+    (when (getf initargs :dyna)
+      (setf (getf initargs :dyna)
+            (eval (car (getf initargs :dyna)))))
+    (loop for key in '(:table-name :throuput)
+          do (set-car initargs key))
+    (unless (contains-class-or-subclasses (find-class '<dyna-class>) (getf initargs :direct-superclasses))
+      (setf (getf initargs :direct-superclasses)
+            (cons (find-class '<dyna-class>) (getf initargs :direct-superclasses))))))
 
 (defun initialize-after-action (instance initargs)
   (declare (ignore initargs))
@@ -70,11 +77,6 @@
   '<dyna-table-column>)
 
 @export
-(defgeneric table-name (class)
-  (:method ((class <dyna-table-class>))
-    (car (slot-value class 'table-name))))
-
-@export
 (defgeneric table-hash-key (class)
   (:method (class)
     (find-key-type-key class :hash)))
@@ -89,8 +91,3 @@
     (find-key-type-key (find-class class) type))
   (:method ((class <dyna-table-class>) type)
     (find type (class-direct-slots class) :key #'key-type)))
-
-@export
-(defgeneric table-dyna (class)
-  (:method ((class <dyna-table-class>))
-    (slot-value class 'dyna)))

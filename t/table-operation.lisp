@@ -31,6 +31,7 @@
             :accessor thread-subject))
   (:dyna *dyna*)
   (:table-name "Thread")
+  (:throuput (:read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
 (defclass inexist-table ()
