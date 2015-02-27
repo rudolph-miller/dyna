@@ -7,6 +7,8 @@
         :dyna.table)
   (:import-from :jsown
                 :val)
+  (:import-from :alexandria
+                :make-keyword)
   (:import-from :closer-mop
                 :class-direct-slots
                 :slot-definition-name))
@@ -32,13 +34,16 @@
 
 @export
 (defgeneric sync-table (table)
+  (:method ((table symbol))
+    (sync-table (find-class table)))
   (:method ((table <dyna-table-class>))
     (when (table-synced table) (return-from sync-table t))
     (unless (table-exist-p table)
       (error '<dyna-inexist-table> :table (table-name table)))
     (let* ((table-definition (val (describe-dyna table) "Table"))
-           (key-schema (val table-definition "KeySchema")))
-      (unless (equal-key-schema-p key-schema table)
+           (key-schema (val table-definition "KeySchema"))
+           (attr-definitions (val table-definition "AttributeDefinitions")))
+      (unless (and (equal-key-schema-p key-schema table) (equal-attr-types-p attr-definitions table))
         (error '<dyna-incompatible-table-schema> :table (table-name table)))
       (setf (table-synced table) t))))
 
@@ -54,6 +59,14 @@
           (table-range-key (table-range-key table)))
       (and (equal hash-key (attr-name-if-exist table-hash-key))
            (equal range-key (attr-name-if-exist table-range-key))))))
+
+(defun equal-attr-types-p (schema table)
+  (flet ((find-attr-type (name)
+           (let ((result (find name schema :test #'equal :key #'(lambda (obj) (val obj "AttributeName")))))
+             (when result (val result "AttributeType")))))
+    (loop for slot in (class-direct-slots table)
+          always (and (slot-boundp slot 'attr-type)
+                      (eq (attr-type slot) (make-keyword (find-attr-type (attr-name slot))))))))
 
 (defun build-dyna-table-obj (table result)
   (when result

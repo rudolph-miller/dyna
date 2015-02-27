@@ -21,10 +21,12 @@
 (defclass thread ()
   ((forum-name :key-type :hash
                :attr-name "ForumName"
+               :attr-type :S
                :initarg :forum-name
                :accessor thread-forum-name)
    (subject :key-type :range
             :attr-name "Subject"
+            :attr-type :S
             :initarg :subject
             :accessor thread-subject))
   (:dyna *dyna*)
@@ -53,15 +55,17 @@
 
 (subtest "sync-table"
   (ok (not (table-synced (find-class 'thread)))
-      "Slot %synced is first NIL.")
+      "Slot %synced is at first NIL.")
 
   (is-error (sync-table (find-class 'inexist-table))
-            '<dyna-inexist-table>)
+            '<dyna-inexist-table>
+            "can raise the error with the inexisted table.")
 
   (setf (find-class 'thread) nil)
   (defclass thread ()
     ((forum-name :key-type :hash
                  :attr-name "ForumName"
+                 :attr-type :S
                  :initarg :forum-name
                  :accessor thread-forum-name))
     (:dyna *dyna*)
@@ -70,7 +74,7 @@
 
   (is-error (sync-table (find-class 'thread))
             '<dyna-incompatible-table-schema>
-            "can raise the error with the incompatible schema.")
+            "can raise the error with the incompatible key schema.")
 
   (setf (find-class 'thread) nil)
   (defclass thread ()
@@ -86,11 +90,31 @@
     (:table-name "Thread")
     (:metaclass <dyna-table-class>))
 
+  (is-error (sync-table (find-class 'thread))
+            '<dyna-incompatible-table-schema>
+            "can raise the error with the incompatible attr types.")
+
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:metaclass <dyna-table-class>))
+
   (ok (sync-table (find-class 'thread))
       "can return T if the table schema is correct.")
 
   (ok (table-synced (find-class 'thread))
-      "Slot %synced is not T."))
+      "Slot %synced is now T."))
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")
