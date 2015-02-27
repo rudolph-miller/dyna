@@ -155,15 +155,19 @@
   (:throuput (:read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
-(subtest "migrate-dyna-table"
+(subtest "create-dyna-table"
   (delete-table *dyna* :table-name "Thread")
   (ok (not (table-exist-p 'thread))
       "Table: Thread doesn't exist now.")
 
-  (migrate-dyna-table 'thread)
+  (create-dyna-table 'thread)
 
   (ok (table-exist-p 'thread)
-      "Table: Thread exists now."))
+      "Table: Thread exists now.")
+
+  (is-error (create-dyna-table 'thread)
+            '<dyna-request-error>
+            "can raise the error if the table already exists."))
 
 
 (put-item  *dyna* :table-name "Thread"

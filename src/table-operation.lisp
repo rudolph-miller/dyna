@@ -93,6 +93,15 @@
   (:method ((table symbol))
     (migrate-dyna-table (find-class table)))
   (:method ((table <dyna-table-class>))
+  (if (table-exist-p table)
+      (update-dyna-table table)
+      (create-dyna-table table))))
+
+@export
+(defgeneric create-dyna-table (table)
+  (:method ((table symbol))
+    (create-dyna-table (find-class table)))
+  (:method ((table <dyna-table-class>))
     (let ((hash-key (table-hash-key table))
           (range-key (table-range-key table))
           (throughput (table-throughput table)))
@@ -106,6 +115,12 @@
                                                              ("AttributeType" . ,(symbol-name (attr-type slot)))))
                    :provisioned-throughput `(("ReadCapacityUnits" . ,(getf throughput :read))
                                              ("WriteCapacityUnits" . ,(getf throughput :write)))))))
+
+@export
+(defgeneric update-dyna-table (table)
+  (:method ((table symbol))
+    (update-dyna-table (find-class table)))
+  (:method ((table <dyna-table-class>))))
 
 @export
 (defgeneric find-dyna (table &rest values)

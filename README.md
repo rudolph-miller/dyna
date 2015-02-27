@@ -77,12 +77,12 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - `:attr-name` in slot is AttributeName of Item in DynamoDB's table.
   - `:attr-type` in slot is AttributeType of Item in DynamoDB's table.
 
-### migrate-dyna-table
+### create-dyna-table
 ```Lisp
-(migrate-dyna-table 'thread)
+(create-dyna-table 'thread)
 ;; => T
 ```
-  - can return T if the table is successfully migrated.
+  - can return T if the table is successfully created.
 
 ### find-dyna
 ```Lisp
