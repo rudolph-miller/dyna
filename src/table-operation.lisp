@@ -178,8 +178,7 @@
       (values (mapcar #'(lambda (item)
                           (build-dyna-table-obj table item))
                       result)
-              raw-result
-              error))))
+              raw-result))))
 
 @export
 (defgeneric save-dyna (obj)
