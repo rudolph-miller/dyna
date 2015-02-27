@@ -24,6 +24,9 @@ Dyna is a Common Lisp library for AWS DynamoDB.
   (:table-name "Thread")
   (:metaclass <dyna-table-class>))
 
+(migrate-dyna-teble 'thread)
+;; => T
+
 (find-dyna 'thread "Amazon DynamoDB" "Really useful")
 ;; => #<THREAD :forum-name "Amazon DynamoDB" :subject "Really useful">
 
