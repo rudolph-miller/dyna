@@ -220,4 +220,25 @@
       :test #'(lambda (a b) (set-equal a b :test #'equal))
       "can return the correct objects."))
 
+(subtest "save-dyna"
+  (let ((object (make-instance 'thread :forum-name "Amazon S3" :subject "Limiration")))
+    (save-dyna object)
+    (is (find-dyna 'thread "Amazon S3" "Limiration")
+        object
+        :test #'(lambda (a b) (equal (thread-forum-name a)
+                                     (thread-forum-name b)))
+        "can correctly insert an object."))
+
+  (is-error (save-dyna (make-instance 'thread))
+            '<dyna-incomplete-argumet-error>
+            "can raise the error without attributes.")
+
+  (is-error (save-dyna (make-instance 'thread :forum-name "Amazon CloudFront"))
+            '<dyna-request-error>
+            "can raise the error with the incompatible attributes.")
+
+  (is-error (save-dyna (make-instance 'thread :forum-name "Amazon CloudFront" :subject 1))
+            '<dyna-request-error>
+            "can raise the error with the incompatible attr-type value."))
+
 (finalize)

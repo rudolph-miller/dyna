@@ -159,7 +159,6 @@
                                        :return-consumed-capacity "TOTAL")
         (values (build-dyna-table-obj table result) raw-result error)))))
 
-
 @export
 (defgeneric select-dyna (table &rest args)
   (:method ((table symbol) &rest args)
@@ -174,3 +173,20 @@
                       result)
               raw-result
               error))))
+
+@export
+(defgeneric insert-dyna (obj)
+  (:method ((obj <dyna-class>))
+    (let ((table (class-of obj)))
+      (put-item (table-dyna table)
+                :table-name (table-name table)
+                :item (loop for slot in (class-direct-slots table)
+                            for name = (slot-definition-name slot)
+                            when (slot-boundp obj name)
+                              collecting (cons (attr-name slot)
+                                               (slot-value obj name)))))))
+
+@export
+(defgeneric save-dyna (obj)
+  (:method ((obj <dyna-class>))
+    (insert-dyna obj)))

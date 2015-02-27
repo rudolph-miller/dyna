@@ -27,6 +27,9 @@ Dyna is a Common Lisp library for AWS DynamoDB.
 (migrate-dyna-teble 'thread)
 ;; => T
 
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful"))
+;; => T
+
 (find-dyna 'thread "Amazon DynamoDB" "Really useful")
 ;; => #<THREAD :forum-name "Amazon DynamoDB" :subject "Really useful">
 
@@ -120,7 +123,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ```
   - can create the table if the table doesn't exist.
   - can update the table if the table definitions are chagned.
-  - can return NIL if the table has no changs.
+  - can return NIL if the table has no changes.
 
 ### find-dyna
 ```Lisp
@@ -128,6 +131,13 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ;; => #<THREAD :forum-name "Amazon DynamoDB" :subject "Really useful">
 ```
   - can return a object if matching Item exists.
+
+### save-dyna
+```Lisp
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful"))
+;; =>
+```
+  - can return T if the object is successfully saved.
 
 ## Low Level API
 
