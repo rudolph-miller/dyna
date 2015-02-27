@@ -89,7 +89,7 @@
           (mapcar #'attr-name (class-direct-slots table))))
 
 @export
-(defgeneric migrate-dyna (table)
+(defgeneric migrate-dyna-table (table)
   (:method ((table symbol))
     (migrate-dyna (find-class table)))
   (:method ((table <dyna-table-class>))

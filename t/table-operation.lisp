@@ -155,12 +155,12 @@
   (:throuput (:read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
-(subtest "migrate-dyna"
+(subtest "migrate-dyna-table"
   (delete-table *dyna* :table-name "Thread")
   (ok (not (table-exist-p 'thread))
       "Table: Thread doesn't exist now.")
 
-  (migrate-dyna 'thread)
+  (migrate-dyna-table 'thread)
 
   (ok (table-exist-p 'thread)
       "Table: Thread exists now."))
