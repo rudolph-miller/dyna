@@ -56,21 +56,33 @@ Most API return multiple values, the formaer is formatted result, and the latter
 (defclass thread ()
   ((forum-name :key-type :hash
                :attr-name "ForumName"
+               :attr-type :S
                :initarg :forum-name
                :accessor thread-forum-name)
    (subject :key-type :range
             :attr-name "Subject"
+            :attr-type :S
             :initarg :subject
             :accessor thread-subject))
   (:dyna *dyna*)
   (:table-name "Thread")
+  (:thread (:read 5 :wirte 5)
   (:metaclass <dyna-table-class>))
 ```
   - You can create class haveing <dyna-table-class> as `:metaclass`.
   - `:dyna` can take `dyna` object.
   - `:table-name` can take table name of DynamoDB's table.
+  - `:throughput` is the provisioned throuput of the table.
   - `:key-type` in slot should be `:hash` or `:range` and is the same as DynamoDB's table.
   - `:attr-name` in slot is AttributeName of Item in DynamoDB's table.
+  - `:attr-type` in slot is AttributeType of Item in DynamoDB's table.
+
+### migrate-dyna
+```Lisp
+(migrate-dyna 'thread)
+;; => T
+```
+  - can return T if the table is successfully migrated.
 
 ### find-dyna
 ```Lisp
