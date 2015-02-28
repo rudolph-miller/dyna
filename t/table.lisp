@@ -11,7 +11,7 @@
 
 (diag "dyna-test.table")
 
-(setf (find-class 'thread) nil)
+(setf (find-class 'thread nil) nil)
 
 (ok (defclass thread ()
       ((forum-name :key-type :hash
@@ -28,6 +28,8 @@
       (:throuput (:write 5 :read 5))
       (:metaclass <dyna-table-class>))
     "can create class having <dyna-table-class> as metaclass.")
+
+(setf (find-class 'thread2 nil) nil)
 
 (ok (defclass thread2 ()
       ((forum-name :key-type :hash

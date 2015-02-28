@@ -18,7 +18,7 @@
 (defclass <dyna-table-column> (standard-direct-slot-definition)
   ((key-type :initarg :key-type
              :initform nil)
-   (attr-name :type string
+   (attr-name :type (or string null)
               :initarg :attr-name
               :initform nil)
    (attr-type :initarg :attr-type
