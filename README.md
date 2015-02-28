@@ -80,6 +80,21 @@ Most API return multiple values, the formaer is formatted result, and the latter
   (:table-name "Thread")
   (:throughput (:read 5 :wirte 5)
   (:metaclass <dyna-table-class>))
+
+;; Simpler Style
+
+(defclass thread ()
+  ((forum-name :key-type :hash
+               :attr-type :S
+               :initarg :forum-name
+               :accessor thread-forum-name)
+   (subject :key-type :range
+            :attr-type :S
+            :initarg :subject
+            :accessor thread-subject))
+  (:dyna *dyna*)
+  (:throughput (:read 5 :wirte 5)
+  (:metaclass <dyna-table-class>))
 ```
   - You can create class haveing <dyna-table-class> as `:metaclass`.
   - `:dyna` can take `dyna` object.
