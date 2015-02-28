@@ -5,7 +5,8 @@
         :dyna.error
         :dyna.operation
         :dyna.column 
-        :dyna.table)
+        :dyna.table
+        :dyna.sxql)
   (:import-from :jsown
                 :val)
   (:import-from :alexandria
@@ -166,18 +167,35 @@
         (values (build-dyna-table-obj table result) raw-result)))))
 
 @export
-(defgeneric select-dyna (table &rest args)
-  (:method ((table symbol) &rest args)
-    (apply #'select-dyna (find-class table) args))
-  (:method ((table <dyna-table-class>) &rest args)
-    (declare (ignore args))
-    (multiple-value-bind (result raw-result)
-        (scan (table-dyna table) :table-name (table-name table)
-                                 :projection-expression (table-projection-expression table))
-      (values (mapcar #'(lambda (item)
-                          (build-dyna-table-obj table item))
-                      result)
-              raw-result))))
+(defgeneric select-dyna (table &optional where-clause)
+  (:method ((table symbol) &optional where-clause)
+    (select-dyna (find-class table) where-clause))
+  (:method ((table <dyna-table-class>) &optional where-clause)
+    (let ((expressions (yield where-clause table)))
+      (multiple-value-bind (result raw-result)
+          (if (queryable table expressions)
+              (query-dyna table expressions)
+              (scan-dyna table expressions))
+        (values (mapcar #'(lambda (item)
+                            (build-dyna-table-obj table item))
+                        result)
+                raw-result)))))
+
+(defun queryable (table expressions)
+  (print expressions)
+  t)
+
+(defun scan-dyna (table expressions)
+  (scan (table-dyna table)
+        :table-name (table-name table)
+        :select "SPECIFIC_ATTRIBUTES"
+        :projection-expression (table-projection-expression table)))
+
+(defun query-dyna (table expressions)
+  (query (table-dyna table)
+         :table-name (table-name table)
+         :key-conditions '(("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB")) ("ComparisonOperator" . "EQ"))))
+         :projection-expression (table-projection-expression table)))
 
 @export
 (defgeneric save-dyna (obj)
@@ -199,8 +217,8 @@
     (flet ((get-value-if-bounded (object slot)
              (when (slot-boundp object slot) (slot-value object slot))))
       (let* ((table (class-of obj))
-            (hash-key (table-hash-key table))
-            (range-key (table-range-key table)))
+             (hash-key (table-hash-key table))
+             (range-key (table-range-key table)))
         (sync-table table)
         (delete-item (table-dyna table)
                      :table-name (table-name table)

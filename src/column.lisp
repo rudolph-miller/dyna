@@ -1,8 +1,7 @@
 (in-package :cl-user)
 (defpackage dyna.column
   (:use :cl
-        :annot.class
-        :dyna)
+        :annot.class)
   (:import-from :closer-mop
                 :validate-superclass
                 :standard-direct-slot-definition

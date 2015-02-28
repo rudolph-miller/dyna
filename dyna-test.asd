@@ -22,6 +22,7 @@
                  (:test-file "fetch")
                  (:test-file "content")
                  (:test-file "table")
+                 (:test-file "sxql")
                  (:test-file "table-operation"))))
 
   :defsystem-depends-on (:prove-asdf)

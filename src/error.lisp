@@ -51,3 +51,11 @@
      (format stream
              "Table: ~a doesn't exists in DynamoDB"
              (slot-value condition 'table)))))
+
+@export
+(define-condition <dyna-unsupported-op-erorr> (<dyna-error>)
+  ((op :initarg :op))
+  (:report
+   (lambda (condition stream)
+     (format stream "Unsupported operation: ~a"
+             (slot-value condition 'op)))))

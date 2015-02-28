@@ -3,7 +3,6 @@
   (:use :cl
         :annot.class
         :dyna.util
-        :dyna.operation
         :dyna.structure
         :dyna.column)
   (:import-from :closer-mop

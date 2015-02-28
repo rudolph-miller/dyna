@@ -9,7 +9,9 @@
         :dyna.table
         :dyna.table-operation)
   (:import-from :alexandria
-                :set-equal))
+                :set-equal)
+  (:import-from :sxql
+                :where))
 (in-package :dyna-test.table-operation)
 
 (plan nil)
@@ -242,7 +244,10 @@
   (is (mapcar #'thread-forum-name (select-dyna 'thread))
       '("Amazon DynamoDB" "Amazon RDS")
       :test #'(lambda (a b) (set-equal a b :test #'equal))
-      "can return the correct objects."))
+      "can return the correct objects.")
+  (is (thread-forum-name (car (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")))))
+      "Amazon DynamoDB"
+      "can handle where-clause."))
 
 (subtest "save-dyna"
   (setf (find-class 'thread) nil)

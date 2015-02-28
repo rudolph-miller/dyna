@@ -28,10 +28,11 @@
                :jsown
                :split-sequence
                :alexandria
-               :closer-mop)
+               :closer-mop
+               :sxql)
   :components ((:module "src"
                 :components
-                ((:file "dyna" :depends-on ("structure" "operation" "error"))
+                ((:file "dyna" :depends-on ("table-operation" "table" "structure" "operation" "error"))
                  (:file "error")
                  (:file "util" :depends-on ("desc"))
                  (:file "desc" :pathname "describe")
@@ -41,8 +42,9 @@
                  (:file "operation" :depends-on ("fetch" "content" "structure" "error"))
                  (:file "structure")
                  (:file "column")
-                 (:file "table" :depends-on ("structure" "column"))
-                 (:file "table-operation" :depends-on ("table" "operation" "error")))))
+                 (:file "table" :depends-on ("structure" "column" "util"))
+                 (:file "sxql" :depends-on ("table" "column" "error"))
+                 (:file "table-operation" :depends-on ("sxql" "table" "operation" "error")))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames
