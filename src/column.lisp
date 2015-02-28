@@ -16,13 +16,29 @@
 @export
 @export-accessors
 (defclass <dyna-table-column> (standard-direct-slot-definition)
-  ((key-type :type :keyword
-             :initarg :key-type
-             :accessor key-type
+  ((key-type :initarg :key-type
              :initform nil)
    (attr-name :type string
               :initarg :attr-name
-              :accessor attr-name)
-   (attr-type :type :keyword
-              :initarg :attr-type
-              :accessor attr-type)))
+              :initform nil)
+   (attr-type :initarg :attr-type
+              :initform :nil)))
+
+@export
+(defgeneric key-type (column)
+  (:method ((column <dyna-table-column>))
+    (when (and (slot-boundp column 'key-type) (slot-value column 'key-type))
+      (format nil "~:@(~a~)" (slot-value column 'key-type)))))
+
+@export
+(defgeneric attr-name (column)
+  (:method ((column <dyna-table-column>))
+    (if (slot-boundp column 'attr-name)
+        (slot-value column 'attr-name)
+        (format nil "~(~a~)" (slot-definition-name column)))))
+
+@export
+(defgeneric attr-type (column)
+  (:method ((column <dyna-table-column>))
+    (when (and (slot-boundp column 'attr-type) (slot-value column 'attr-type))
+      (format nil "~:@(~a~)" (slot-value column 'attr-type)))))

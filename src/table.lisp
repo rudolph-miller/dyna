@@ -22,10 +22,17 @@
 @export
 @export-accessors
 (defclass <dyna-table-class> (standard-class)
-  ((table-name :type (or cons string) :initarg :table-name :accessor table-name)
+  ((table-name :type (or cons string) :initarg :table-name)
    (dyna :type (or cons dyna) :initarg :dyna :accessor table-dyna)
    (throughput :type cons :initarg :throuput :accessor table-throughput)
    (%synced :type boolean :initform nil :accessor table-synced)))
+
+@export
+(defgeneric table-name (table)
+  (:method ((table <dyna-table-class>))
+    (or (and (slot-boundp table 'table-name)
+             (slot-value table 'table-name))
+        (format nil "~(~a~)" (class-name table)))))
 
 (defun contains-class-or-subclasses (class target-classes)
   (let ((class (if (typep class 'class)
@@ -79,15 +86,15 @@
 @export
 (defgeneric table-hash-key (class)
   (:method (class)
-    (find-key-type-key class :hash)))
+    (find-key-type-key class "HASH")))
 
 @export
 (defgeneric table-range-key (class)
   (:method (class)
-    (find-key-type-key class :range)))
+    (find-key-type-key class "RANGE")))
 
 (defgeneric find-key-type-key (class type)
   (:method ((class symbol) type)
     (find-key-type-key (find-class class) type))
   (:method ((class <dyna-table-class>) type)
-    (find type (class-direct-slots class) :key #'key-type)))
+    (find type (class-direct-slots class) :key #'key-type :test #'equal)))

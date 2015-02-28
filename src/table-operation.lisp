@@ -9,8 +9,7 @@
   (:import-from :jsown
                 :val)
   (:import-from :alexandria
-                :length=
-                :make-keyword)
+                :length=)
   (:import-from :closer-mop
                 :class-direct-slots
                 :slot-definition-name))
@@ -78,7 +77,7 @@
       (and (length= slots schema)
            (loop for slot in slots
                  always (and (slot-boundp slot 'attr-type)
-                             (eq (attr-type slot) (make-keyword (find-attr-type (attr-name slot))))))))))
+                             (equal (attr-type slot) (find-attr-type (attr-name slot)))))))))
 
 (defun equal-throughput-p (schema table)
   (and (= (val schema "ReadCapacityUnits") (getf (table-throughput table) :read))
@@ -108,7 +107,7 @@
 (defun attribute-definitions (table)
   (loop for slot in (table-should-define-slots table)
         collecting `(("AttributeName" . ,(attr-name slot))
-                     ("AttributeType" . ,(symbol-name (attr-type slot))))))
+                     ("AttributeType" . ,(attr-type slot)))))
 
 (defun provisioned-throughput (table)
   (let ((throughput (table-throughput table)))

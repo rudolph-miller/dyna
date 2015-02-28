@@ -29,7 +29,21 @@
       (:metaclass <dyna-table-class>))
     "can create class having <dyna-table-class> as metaclass.")
 
-(let ((table (find-class 'thread)))
+(ok (defclass thread2 ()
+      ((forum-name :key-type :hash
+                   :attr-type :S
+                   :initarg :forum-name)
+       (subject :key-type :range
+                :attr-type :S
+                :initarg :subject))
+      (:dyna (make-dyna :credentials (cons "DYNA_TEST_ACCESS_KEY" "DYNA_TEST_SECRET_KEY")
+                        :region "local"))
+      (:throuput (:write 5 :read 5))
+      (:metaclass <dyna-table-class>))
+    "can create class having <dyna-table-class> as metaclass without :table-name.")
+
+(let ((table (find-class 'thread))
+      (table2 (find-class 'thread2)))
 
   (ok (find table (c2mop:class-direct-subclasses (find-class '<dyna-class>)))
       "can set <dyna-class> as one of superclasses.")
@@ -41,6 +55,10 @@
   (is (table-name table)
       "Thread"
       "can handle :table-name.")
+
+  (is (table-name table2)
+      "thread2"
+      "without :table-name")
 
   (is (table-throughput table)
       '(:write 5 :read 5)
@@ -54,8 +72,12 @@
       "Subject"
       "can handle :key-type and :attr-name with :key-type :hash.")
 
+  (is (attr-name (table-hash-key table2))
+      "forum-name"
+      "without :attr-name")
+
   (is (attr-type (table-hash-key table))
-      :S
+      "S"
       "can handle :attr-type."))
 
 (finalize)
