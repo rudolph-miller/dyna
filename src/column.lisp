@@ -33,7 +33,7 @@
 @export
 (defgeneric attr-name (column)
   (:method ((column <dyna-table-column>))
-    (if (slot-boundp column 'attr-name)
+    (if (and (slot-boundp column 'attr-name) (slot-value column 'attr-name))
         (slot-value column 'attr-name)
         (format nil "~(~a~)" (slot-definition-name column)))))
 
