@@ -171,7 +171,7 @@
   (:method ((table symbol) &optional where-clause)
     (select-dyna (find-class table) where-clause))
   (:method ((table <dyna-table-class>) &optional where-clause)
-    (let ((expressions (yield where-clause table)))
+    (let ((expressions (when where-clause (yield where-clause table))))
       (multiple-value-bind (result raw-result)
           (if (queryable table expressions)
               (query-dyna table expressions)
@@ -182,8 +182,8 @@
                 raw-result)))))
 
 (defun queryable (table expressions)
-  (print expressions)
-  t)
+  (declare (ignore table))
+  (if expressions t nil))
 
 (defun scan-dyna (table expressions)
   (scan (table-dyna table)
@@ -192,10 +192,15 @@
         :projection-expression (table-projection-expression table)))
 
 (defun query-dyna (table expressions)
-  (query (table-dyna table)
-         :table-name (table-name table)
-         :key-conditions '(("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB")) ("ComparisonOperator" . "EQ"))))
-         :projection-expression (table-projection-expression table)))
+  (let ((expressions (cond
+                       ((equal (car expressions) "AND") (cdr expressions))
+                       ((equal (car expressions) "OR") (error '<dyna-unsupported-op-erorr> :op expressions))
+                       (t (list expressions)))))
+    (print expressions)
+    (query (table-dyna table)
+           :table-name (table-name table)
+           :key-conditions expressions
+           :projection-expression (table-projection-expression table))))
 
 @export
 (defgeneric save-dyna (obj)

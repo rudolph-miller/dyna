@@ -247,7 +247,11 @@
       "can return the correct objects.")
   (is (thread-forum-name (car (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")))))
       "Amazon DynamoDB"
-      "can handle where-clause."))
+      "can handle where-clause with :=.")
+  (is (thread-forum-name (car (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                                (:= :subject "Really useful"))))))
+      "Amazon DynamoDB"
+      "can handle where-clause with :and."))
 
 (subtest "save-dyna"
   (setf (find-class 'thread) nil)

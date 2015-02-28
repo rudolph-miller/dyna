@@ -153,6 +153,17 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ```
   - can return a object if matching Item exists.
 
+### select-dyna
+```Lisp
+(select-dyna 'thread)
+;; => (#<THREAD > <#THREAD >)
+
+(selet-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")))
+;; => (#<THREAD >)
+```
+  - returns the list of objects.
+  - can handle where-clause of SxQL.
+
 ### save-dyna
 ```Lisp
 (save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful"))
@@ -182,7 +193,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ;;              (("Id" . 2) ("Title" . "Sophisticated Programming Language") ("Author" . "Lisp-Alien")))
 ;;     ("Thread" (("ForumName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads"))))
 ```
-  - returns a list of alists.
+  - returns the list of alists.
   - Support
     - `:request-items`
     - `:return-consumed-capacity`
@@ -286,7 +297,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
 (list-tables-content dyna)
 ;; => ("Thread")
 ```
-  - returns a list of table names.
+  - returns the list of table names.
 
 ### put-item
 ```Lisp
@@ -416,6 +427,10 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:provisioned-throughput`
   - Unsupport
     - `:global-secondary-indexe`
+
+## See Also
+
+- [SxQL](https://github.com/fukamachi/sxql/) - A SQL generator.
 
 ## Author
 
