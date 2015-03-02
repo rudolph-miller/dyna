@@ -212,7 +212,8 @@
                                   :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
                                                                 ("ComparisonOperator" . "EQ"))))
                                   :exclusive-start-key '(("ForumName" . "Amazon RDS"))
-                                  :filter-expression "Replies > :num"
+                                  :filter-expression "#r > :num"
+                                  :expression-attribute-names '(("#r" . "Replies"))
                                   :expression-attribute-values '((":num" . 1))
                                   :scan-index-forward t
                                   :return-consumed-capacity "TOTAL")
@@ -228,7 +229,8 @@
                                   :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
                                                                 ("ComparisonOperator" . "EQ"))))
                                   :exclusive-start-key '(("ForumName" . "Amazon RDS"))
-                                  :filter-expression "Replies > :num"
+                                  :filter-expression "#r > :num"
+                                  :expression-attribute-names '(("#r" . "Replies"))
                                   :expression-attribute-values '((":num" . 1))
                                   :scan-index-forward t
                                   :return-consumed-capacity "TOTAL")
@@ -248,7 +250,8 @@
                             :query-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
                                                           ("ComparisonOperator" . "EQ"))))
                             :exclusive-start-key '(("ForumName" . "Amazon RDS"))
-                            :filter-expression "Replies > :num"
+                            :filter-expression "#r > :num"
+                            :expression-attribute-names '(("#r" . "Replies"))
                             :expression-attribute-values '((":num" . 1))
                             :scan-index-forward t
                             :return-consumed-capacity "TOTAL")
@@ -263,7 +266,8 @@
                     "\"ConditionalOperator\":\"OR\""
                     "\"ExclusiveStartKey\":{\"ForumName\":{\"S\":\"Amazon RDS\"}}"
                     "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}"
-                    "\"FilterExpression\":\"Replies > :num\""
+                    "\"ExpressionAttributeNames\":{\"#r\":\"Replies\"}"
+                    "\"FilterExpression\":\"#r > :num\""
                     "\"QueryFilter\":{\"Subject\":{\"AttributeValueList\":[{\"S\":\"Update multiple items\"}"
                     "{\"S\":\"Concurrent reads\"}]"
                     "\"ComparisonOperator\":\"EQ\"}}"
@@ -280,7 +284,8 @@
                                  :scan-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
                                                               ("ComparisonOperator" . "EQ"))))
                                  :exclusive-start-key '(("ForumName" . "Amazon RDS"))
-                                 :filter-expression "Replies > :num"
+                                 :filter-expression "#r > :num"
+                                 :expression-attribute-names '(("#r" . "Replies"))
                                  :expression-attribute-values '((":num" . 1))
                                  :scan-index-forward t
                                  :return-consumed-capacity "TOTAL"
@@ -288,6 +293,7 @@
                                  :total-segments 4)
               '<dyna-incomplete-argumet-error>
               "can raise the error without :table-name.")
+
     (is (scan-content dyna :table-name "Thread"
                            :select "SPECIFIC_ATTRIBUTES"
                            :attributes-to-get '("ForumName" "Subject")
@@ -298,29 +304,31 @@
                            :scan-filter '(("Subject" . (("AttributeValueList" . ("Update multiple items" "Concurrent reads"))
                                                         ("ComparisonOperator" . "EQ"))))
                            :exclusive-start-key '(("ForumName" . "Amazon RDS"))
-                           :filter-expression "Replies > :num"
+                           :filter-expression "#r > :num"
+                           :expression-attribute-names '(("#r" . "Replies"))
                            :expression-attribute-values '((":num" . 1))
                            :scan-index-forward t
                            :return-consumed-capacity "TOTAL"
                            :segment 1
                            :total-segments 4)
-         (build-json "\"TableName\":\"Thread\""
-                     "\"ReturnConsumedCapacity\":\"TOTAL\""
-                     "\"AttributesToGet\":[\"ForumName\",\"Subject\"]"
-                     "\"IndexName\":\"LastPostIndex\""
-                     "\"Select\":\"SPECIFIC_ATTRIBUTES\""
-                     "\"Limit\":3"
-                     "\"ConsistentRead\":true"
-                     "\"ConditionalOperator\":\"OR\""
-                     "\"ExclusiveStartKey\":{\"ForumName\":{\"S\":\"Amazon RDS\"}}"
-                     "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}"
-                     "\"FilterExpression\":\"Replies > :num\""
-                     "\"ScanFilter\":{\"Subject\":{\"AttributeValueList\":[{\"S\":\"Update multiple items\"}"
-                     "{\"S\":\"Concurrent reads\"}]"
-                     "\"ComparisonOperator\":\"EQ\"}}"
-                     "\"ScanIndexForward\":true"
-                     "\"Segment\":1"
-                     "\"TotalSegments\":4")
+        (build-json "\"TableName\":\"Thread\""
+                    "\"ReturnConsumedCapacity\":\"TOTAL\""
+                    "\"AttributesToGet\":[\"ForumName\",\"Subject\"]"
+                    "\"IndexName\":\"LastPostIndex\""
+                    "\"Select\":\"SPECIFIC_ATTRIBUTES\""
+                    "\"Limit\":3"
+                    "\"ConsistentRead\":true"
+                    "\"ConditionalOperator\":\"OR\""
+                    "\"ExclusiveStartKey\":{\"ForumName\":{\"S\":\"Amazon RDS\"}}"
+                    "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}"
+                    "\"ExpressionAttributeNames\":{\"#r\":\"Replies\"}"
+                    "\"FilterExpression\":\"#r > :num\""
+                    "\"ScanFilter\":{\"Subject\":{\"AttributeValueList\":[{\"S\":\"Update multiple items\"}"
+                    "{\"S\":\"Concurrent reads\"}]"
+                    "\"ComparisonOperator\":\"EQ\"}}"
+                    "\"ScanIndexForward\":true"
+                    "\"Segment\":1"
+                    "\"TotalSegments\":4")
         "can return the correct JSON object."))
 
   (subtest "update-item"

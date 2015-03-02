@@ -346,12 +346,11 @@ Most API return multiple values, the formaer is formatted result, and the latter
      - `:conditional-operator`
      - `:exclusive-start-key`
      - `:expression-attribute-values`
+     - `:expression-attribute-names`
      - `:filter-expression`
      - `:projection-expression`
      - `:query-filter`
      - `:scan-index-forward`
-  - Unsupport
-    - `:expression-attribute-names`
 
 ### scan
 ```Lisp
@@ -377,14 +376,13 @@ Most API return multiple values, the formaer is formatted result, and the latter
      - `:conditional-operator`
      - `:exclusive-start-key`
      - `:expression-attribute-values`
+     - `:expression-attribute-names`
      - `:filter-expression`
      - `:projection-expression`
      - `:scan-filter`
      - `:scan-index-forward`
      - `:segment`
      - `:total-segments`
-  - Unsupport
-    - `:expression-attribute-names`
 
 ### update-item
 ```List

@@ -135,7 +135,7 @@
 
 (defcontent query (&key table-name key-conditions return-consumed-capacity attributes-to-get index-name select
                         limit consistent-read conditional-operator exclusive-start-key expression-attribute-values
-                        filter-expression projection-expression query-filter scan-index-forward)
+                        expression-attribute-names filter-expression projection-expression query-filter scan-index-forward)
     (table-name key-conditions)
   (append (list `("TableName" . ,table-name)
                 `("KeyConditions" . ,(add-obj-to-list
@@ -167,6 +167,8 @@
             (list `("ExclusiveStartKey" . ,(add-obj-to-list (build-desc-list exclusive-start-key)))))
           (when expression-attribute-values
             (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
+          (when expression-attribute-names
+            (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
           (when filter-expression
             (list `("FilterExpression" . ,filter-expression)))
           (when projection-expression
@@ -186,8 +188,8 @@
           (when scan-index-forward
             (list `("ScanIndexForward" . ,scan-index-forward)))))
 
-(defcontent scan (&key table-name return-consumed-capacity attributes-to-get index-name select limit
-                       consistent-read conditional-operator exclusive-start-key expression-attribute-values
+(defcontent scan (&key table-name return-consumed-capacity attributes-to-get index-name select limit consistent-read
+                       conditional-operator exclusive-start-key expression-attribute-values expression-attribute-names
                        filter-expression projection-expression scan-filter scan-index-forward segment total-segments)
     (table-name)
   (append (list `("TableName" . ,table-name))
@@ -209,6 +211,8 @@
             (list `("ExclusiveStartKey" . ,(add-obj-to-list (build-desc-list exclusive-start-key)))))
           (when expression-attribute-values
             (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
+          (when expression-attribute-names
+            (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
           (when filter-expression
             (list `("FilterExpression" . ,filter-expression)))
           (when projection-expression
