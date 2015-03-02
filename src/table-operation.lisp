@@ -220,16 +220,20 @@
             :filter-expression expression
             :expression-attribute-names (append filter-attr-names projection-attr-names)
             :expression-attribute-values attr-values))))
-
+ 
 (defun query-dyna (table where-clause &key start-key limit)
-  (multiple-value-bind (projection projection-attr-names) (table-projection-expression table)
-    (query (table-dyna table)
-           :table-name (table-name table)
-           :limit limit
-           :exclusive-start-key start-key
-           :key-conditions (to-query-expressions where-clause table)
-           :projection-expression projection
-           :expression-attribute-names projection-attr-names)))
+  (multiple-value-bind (key-conditions filter-expression filter-attr-names attr-values)
+      (to-key-conditions where-clause table)
+    (multiple-value-bind (projection projection-attr-names) (table-projection-expression table)
+      (query (table-dyna table)
+             :table-name (table-name table)
+             :limit limit
+             :exclusive-start-key start-key
+             :key-conditions key-conditions
+             :projection-expression projection
+             :filter-expression filter-expression
+             :expression-attribute-names (append filter-attr-names projection-attr-names)
+             :expression-attribute-values attr-values))))
 
 @export
 (defgeneric save-dyna (obj)

@@ -26,8 +26,6 @@
                :attr-type :S
                :initarg :forum-name
                :accessor thread-forum-name)
-   (a :initarg :a
-      :attr-name "a")
    (subject :key-type :range
             :attr-name "Subject"
             :attr-type :S
@@ -214,20 +212,41 @@
   (ok (migrate-dyna-table 'thread)
       "can update the table if the definitions are changed."))
 
+(defclass thread ()
+  ((forum-name :key-type :hash
+               :attr-name "ForumName"
+               :attr-type :S
+               :initarg :forum-name
+               :accessor thread-forum-name)
+   (subject :key-type :range
+            :attr-name "Subject"
+            :attr-type :S
+            :initarg :subject
+            :accessor thread-subject)
+   (tags :attr-name "Tags"
+         :initarg :tags
+         :accessor thread-tags))
+  (:dyna *dyna*)
+  (:table-name "Thread")
+  (:throuput (:read 5 :write 5))
+  (:metaclass <dyna-table-class>))
+
+(migrate-dyna-table 'thread)
+
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")
                           ("Subject" . "Really useful")
-                          ("Tags" . ("Multiple Items" "HelpMe"))))
+                          ("Tags" . "HelpMe")))
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")
                           ("Subject" . "Really scalable")
-                          ("Tags" . ("Scalable"))))
+                          ("Tags" . "Scalable")))
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon RDS")
                           ("Subject" . "Scalable")
-                          ("Tags" . ("How" "Easy"))))
+                          ("Tags" . "Easy")))
 
 (subtest "find-dyna"
   (let ((result (find-dyna 'thread "Amazon DynamoDB" "Really useful")))
@@ -270,10 +289,15 @@
       "with where-clause with :or.")
 
   (is (mapcar #'thread-subject (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
-                                                                    (:or (:= :subject "Really useful")
-                                                                         (:= :subject "Really scalable"))))))
+                                                                 (:or (:= :subject "Really useful")
+                                                                      (:= :subject "Really scalable"))))))
       '("Really scalable" "Really useful")
       "with where-clause with nested :and and :or.")
+
+  (is (mapcar #'thread-tags (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                              (:in :tags '("HelpMe"))))))
+      '("HelpMe")
+      "with non-hash-key.")
 
   (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :limit 1))
       1

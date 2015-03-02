@@ -9,6 +9,7 @@
                 :conjunctive-op
                 :conjunctive-op-name
                 :conjunctive-op-expressions
+                :make-conjunctive-op
                 :infix-op
                 :infix-list-op
                 :conjunctive-op
@@ -25,7 +26,8 @@
                 :sql-variable-value)
   (:import-from :sxql.clause
                 :where-clause
-                :where-clause-expression)
+                :where-clause-expression
+                :make-where-clause)
   (:import-from :alexandria
                 :ensure-list
                 :make-keyword
@@ -75,23 +77,21 @@
 (defgeneric queryable-op-p (op table)
   (:method ((where-clause where-clause) table)
     (queryable-op-p (where-clause-expression where-clause) table))
+
   (:method ((op conjunctive-op) table)
     (let ((expressions (conjunctive-op-expressions op))
           (keys (op-key op table))
+          (hash-key (attr-name (table-hash-key table)))
           (primary-keys (table-primary-keys table)))
       (and (and-op-p op)
-           (every #'(lambda (op)
+           (some #'(lambda (op)
                       (queryable-op-p op table))
                   expressions)
-           (not (some #'conjunctive-op-p expressions))
-           (length= keys (remove-duplicates keys :test #'equal))
-           (include-hash-key keys table)
-           (every #'(lambda (item)
-                      (find item primary-keys :test #'(lambda (a b) (equal a (attr-name b)))))
-                  keys))))
+           (= (position hash-key keys :test #'equal) (position hash-key keys :from-end t :test #'equal)))))
+
   (:method ((op infix-op) table)
-    (if (find (op-key op table) (table-primary-keys table) :test #'(lambda (a b) (equal a (attr-name b))))
-        t nil))
+    (equal (op-key op table) (attr-name (table-hash-key table))))
+
   (:method ((op infix-list-op) table) nil))
 
 (defun conjunctive-op-p (op)
@@ -141,8 +141,11 @@
            (find-attr-value (value) (funcall (find-attr-thing value-env) value))
            (sub (exp)
              (etypecase exp
-               (conjunctive-op (format nil (format nil "(~~{~~A~~^ ~A ~~})" (conjunctive-op-name exp))
-                                       (mapcar #'sub (conjunctive-op-expressions exp))))
+               (conjunctive-op
+                (if (null (cdr (conjunctive-op-expressions exp)))
+                    (format nil "~a" (sub (car (conjunctive-op-expressions exp))))
+                    (format nil (format nil "(~~{~~a~~^ ~a ~~})" (conjunctive-op-name exp))
+                            (mapcar #'sub (conjunctive-op-expressions exp)))))
                (infix-op (format nil "~a ~a ~a"
                                  (find-attr-name (op-key exp table))
                                  (infix-op-name exp)
@@ -154,9 +157,14 @@
     (sub expression)))
 
 @export
-(defgeneric to-query-expressions (op table)
+(defgeneric to-key-conditions (op table)
   (:method ((clause where-clause) table)
-    (to-query-expressions (where-clause-expression clause) table))
+    (multiple-value-bind (result rest) (to-key-conditions (where-clause-expression clause) table)
+      (if rest
+          (multiple-value-bind (expression attr-names attr-values)
+              (to-filter-expression (make-where-clause rest) table)
+            (values result expression attr-names attr-values))
+          result)))
 
   (:method ((op infix-list-op) table)
     `((,(yield (infix-list-op-left op) table)
@@ -169,4 +177,12 @@
        ("ComparisonOperator" . ,(op-comparison-name op)))))
 
   (:method ((op conjunctive-op) table)
-    (mapcan #'(lambda (obj) (to-query-expressions obj table)) (conjunctive-op-expressions op))))
+    (let ((primary-keys (mapcar #'attr-name (table-primary-keys table)))
+          (rest))
+      (values (mapcan #'(lambda (item)
+                          (if (and (equal (sql-op-name item) "=")
+                                   (find (op-key item table) primary-keys :test #'equal))
+                              (to-key-conditions item table)
+                              (progn (push item rest) nil)))
+                      (conjunctive-op-expressions op))
+              (when rest (apply #'make-conjunctive-op (conjunctive-op-name op) rest))))))

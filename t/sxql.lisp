@@ -39,6 +39,17 @@
                         table)
         "T with hash-key and range-key.")
 
+    (ok (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
+                                     (:= :tags "AWS")))
+                        table)
+        "T with non-primary-key.")
+
+    (ok (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
+                                     (:and (:= :subject "Really useful")
+                                           (:= :tags "AWS"))))
+                        table)
+        "T with nested :and.")
+
     (ok (not (queryable-op-p (where (:or (:= :forum-name "Amazon DynamoDB")
                                          (:= :subject "Really useful")))
                              table))
@@ -47,38 +58,37 @@
     (ok (not (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
                                           (:= :forum-name "Amazon RDS")))
                              table))
-        "NIL with two hash-keys.")
+        "NIL with two hash-keys.")))
 
-    (ok (not (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
-                                          (:= :tags "AWS")))
-                             table))
-        "NIL with non-primary-key.")
+(subtest "to-key-conditions"
+  (is-values (to-key-conditions (where (:= "ForumName" "Amazon RDS")) (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))))
+             "with :=")
 
-    (ok (not (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
-                                          (:and (:= :subject "Really useful")
-                                                (:= :tags "AWS"))))
-                             table))
-        "NIL with nested :and.")))
+  (is-values (to-key-conditions (where (:and (:= "ForumName" "Amazon RDS") (:= "Subject" "Scalable"))) (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                ("Subject" . (("AttributeValueList" . ("Scalable")) ("ComparisonOperator" . "EQ")))))
+             "with :and")
 
-(subtest "to-query-expressions"
-  (is (to-query-expressions (where (:= "ForumName" "Amazon RDS")) (find-class 'thread))
-      '(("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
-      "with :=")
+  (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS")) (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))))
+             "with slot-name")
 
-  (is (to-query-expressions (where (:and (:= "ForumName" "Amazon RDS") (:= "Subject" "Scalable"))) (find-class 'thread))
-      '(("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
-        ("Subject" . (("AttributeValueList" . ("Scalable")) ("ComparisonOperator" . "EQ"))))
-      "with :and")
-
-  (is (to-query-expressions (where (:= :forum-name "Amazon RDS")) (find-class 'thread))
-      '(("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
-      "with slot-name"))
-
+  (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                             (:in :subject '("AWS" "Really scalable"))))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+               "#filter0 IN (:filter0,:filter1)"
+               (("#filter0" . "Subject"))
+               ((":filter0" . "AWS") (":filter1" . "Really scalable")))
+             "with op related to no primary keys."))
 
 (subtest "to-filter-expression"
   (let ((table (find-class 'thread)))
     (is-values (to-filter-expression (where (:= :forum-name "Amazon DynamoDB")) table)
-               '("#filter0 = :filter0" (("#filter0" . "ForumName")) ((":filter0" . "Amazon DynamoDB")))
+               '("#filter0 = :filter0"
+                 (("#filter0" . "ForumName"))
+                 ((":filter0" . "Amazon DynamoDB")))
                "with :=.")
 
     (is-values (to-filter-expression (where (:in :forum-name '("Amazon DynamoDB" "Amazon S3"))) table)
