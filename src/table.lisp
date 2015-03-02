@@ -97,3 +97,8 @@
     (find-key-type-key (find-class class) type))
   (:method ((class <dyna-table-class>) type)
     (find type (class-direct-slots class) :key #'key-type :test #'equal)))
+
+@export
+(defgeneric table-primary-keys (class)
+  (:method (class)
+    (list (table-hash-key class) (table-range-key class))))

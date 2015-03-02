@@ -80,6 +80,21 @@
 
   (is (attr-type (table-hash-key table))
       "S"
-      "can handle :attr-type."))
+      "can handle :attr-type.")
+
+  (subtest "table-hash-key"
+    (is (attr-name (table-hash-key table))
+        "ForumName"
+        "can return hash-key of the table."))
+
+  (subtest "table-range-key"
+    (is (attr-name (table-range-key table))
+        "Subject"
+        "can return range-key of the table."))
+
+  (subtest "table-primary-keys"
+    (is (mapcar #'attr-name (table-primary-keys table))
+        '("ForumName" "Subject")
+        "can return the list of keys.")))
 
 (finalize)

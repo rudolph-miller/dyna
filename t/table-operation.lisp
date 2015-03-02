@@ -6,8 +6,11 @@
         :dyna-test.init
         :dyna
         :dyna.error
+        :dyna.sxql
         :dyna.table
         :dyna.table-operation)
+  (:import-from :dyna.table-operation
+                :queryable-p)
   (:import-from :alexandria
                 :set-equal)
   (:import-from :sxql
@@ -219,6 +222,11 @@
                           ("Tags" . ("Multiple Items" "HelpMe"))))
 
 (put-item  *dyna* :table-name "Thread"
+                  :item '(("ForumName" . "Amazon DynamoDB")
+                          ("Subject" . "Really scalable")
+                          ("Tags" . ("Scalable"))))
+
+(put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon RDS")
                           ("Subject" . "Scalable")
                           ("Tags" . ("How" "Easy"))))
@@ -240,17 +248,50 @@
   (ok (not (find-dyna 'thread "NO FORUM NAME" "NO SUBJECT"))
       "can return NIL with no matching."))
 
+(subtest "queryable-p"
+  (let ((table (find-class 'thread)))
+    (ok (queryable-p table (yield (where (:= :forum-name "Amazon DynamoDB")) table))
+        "T with hash-key.")
+
+    (ok (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
+                                               (:= :subject "Really useful")))
+                                  table))
+        "T with hash-key and range-key.")
+
+    (ok (not (queryable-p table (yield (where (:or (:= :forum-name "Amazon DynamoDB")
+                                                   (:= :subject "Really useful")))
+                                       table)))
+        "NIL with :or.")
+
+    (ok (not (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                    (:= :forum-name "Amazon RDS")))
+                                       table)))
+        "NIL with two hash-keys.")
+
+    (ok (not (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                    (:= :tags "AWS")))
+                                       table)))
+        "NIL with non-primary-key.")
+
+    (ok (not (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                    (:and (:= :subject "Really useful")
+                                                          (:= :tags "AWS"))))
+                                       table)))
+        "NIL with nested :and.")))
+
 (subtest "select-dyna"
   (is (mapcar #'thread-forum-name (select-dyna 'thread))
       '("Amazon DynamoDB" "Amazon RDS")
       :test #'(lambda (a b) (set-equal a b :test #'equal))
       "can return the correct objects.")
-  (is (thread-forum-name (car (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")))))
-      "Amazon DynamoDB"
+
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB"))))
+      '("Amazon DynamoDB" "Amazon DynamoDB")
       "can handle where-clause with :=.")
-  (is (thread-forum-name (car (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
-                                                                (:= :subject "Really useful"))))))
-      "Amazon DynamoDB"
+
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                                    (:= :subject "Really useful")))))
+      '("Amazon DynamoDB")
       "can handle where-clause with :and."))
 
 (subtest "save-dyna"

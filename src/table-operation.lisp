@@ -10,6 +10,7 @@
   (:import-from :jsown
                 :val)
   (:import-from :alexandria
+                :flatten
                 :length=)
   (:import-from :closer-mop
                 :class-direct-slots
@@ -173,7 +174,7 @@
   (:method ((table <dyna-table-class>) &optional where-clause)
     (let ((expressions (when where-clause (yield where-clause table))))
       (multiple-value-bind (result raw-result)
-          (if (queryable table expressions)
+          (if (queryable-p table expressions)
               (query-dyna table expressions)
               (scan-dyna table expressions))
         (values (mapcar #'(lambda (item)
@@ -181,9 +182,33 @@
                         result)
                 raw-result)))))
 
-(defun queryable (table expressions)
-  (declare (ignore table))
-  (if expressions t nil))
+(defun queryable-p (table expressions)
+  (let ((keys (expression-keys expressions)))
+    (when (has-hash-key keys table)
+      (cond
+        ((not (conj-p expressions)) t)
+        ((not (some #'conj-p (cdr expressions)))
+         (when (not (equal (car expressions) "OR"))
+           (let* ((duplicated-p (not (length= keys (remove-duplicates keys :test #'equal))))
+                  (primary-keys (mapcar #'attr-name (table-primary-keys table)))
+                  (all-primary-keys-p (every #'(lambda (item)
+                                                 (find item primary-keys :test #'equal))
+                                             keys)))
+             (and (not duplicated-p) all-primary-keys-p))))
+        (t nil)))))
+
+(defun has-hash-key (keys table)
+  (find (attr-name (table-hash-key table)) keys :test #'equal))
+
+(defun expression-keys (expressions)
+  (flatten
+   (if (conj-p expressions)
+       (mapcar #'expression-keys (cdr expressions))
+       (car expressions))))
+
+(defun conj-p (expressions)
+  (let ((car (car expressions)))
+    (or (equal car "AND") (equal car "OR"))))
 
 (defun scan-dyna (table expressions)
   (scan (table-dyna table)
@@ -196,7 +221,6 @@
                        ((equal (car expressions) "AND") (cdr expressions))
                        ((equal (car expressions) "OR") (error '<dyna-unsupported-op-erorr> :op expressions))
                        (t (list expressions)))))
-    (print expressions)
     (query (table-dyna table)
            :table-name (table-name table)
            :key-conditions expressions
