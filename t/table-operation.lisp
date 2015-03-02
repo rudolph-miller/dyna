@@ -248,18 +248,48 @@
 
 (subtest "select-dyna"
   (is (mapcar #'thread-forum-name (select-dyna 'thread))
-      '("Amazon DynamoDB" "Amazon RDS")
-      :test #'(lambda (a b) (set-equal a b :test #'equal))
-      "can return the correct objects.")
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "without args.")
 
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB"))))
       '("Amazon DynamoDB" "Amazon DynamoDB")
-      "can handle where-clause with :=.")
+      "with where-clause with :=.")
+
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:in :forum-name '("Amazon DynamoDB" "Amazon RDS")))))
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "with where-clause with :in.")
 
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                                     (:= :subject "Really useful")))))
       '("Amazon DynamoDB")
-      "can handle where-clause with :and."))
+      "with where-clause with :and")
+
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:or (:= :forum-name "Amazon DynamoDB")
+                                                                   (:= :forum-name "Amazon RDS")))))
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "with where-clause with :or.")
+
+  (is (mapcar #'thread-subject (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
+                                                                    (:or (:= :subject "Really useful")
+                                                                         (:= :subject "Really scalable"))))))
+      '("Really scalable" "Really useful")
+      "with where-clause with nested :and and :or.")
+
+  (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :limit 1))
+      1
+      "with :limit.")
+
+  (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :without-continue t))
+      2
+      "with :without-continue.")
+
+  (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :limit 1 :with-continue t))
+      2
+      "with :limit and :with-continue.")
+
+  (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB"))))
+      2
+      "continue without :limit or :without-continue."))
 
 (subtest "save-dyna"
   (setf (find-class 'thread) nil)

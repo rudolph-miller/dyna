@@ -6,6 +6,8 @@
         :dyna.desc
         :dyna.error
         :dyna.structure)
+  (:import-from :jsown
+                :jsown-object-p)
   (:import-from :alexandria
                 :plist-alist
                 :make-keyword))
@@ -164,7 +166,9 @@
           (when conditional-operator
             (list `("ConditionalOperator" . ,conditional-operator)))
           (when exclusive-start-key
-            (list `("ExclusiveStartKey" . ,(add-obj-to-list (build-desc-list exclusive-start-key)))))
+            (list `("ExclusiveStartKey" . ,(if (jsown-object-p exclusive-start-key)
+                                               exclusive-start-key
+                                               (add-obj-to-list (build-desc-list exclusive-start-key))))))
           (when expression-attribute-values
             (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
           (when expression-attribute-names
@@ -208,7 +212,9 @@
           (when conditional-operator
             (list `("ConditionalOperator" . ,conditional-operator)))
           (when exclusive-start-key
-            (list `("ExclusiveStartKey" . ,(add-obj-to-list (build-desc-list exclusive-start-key)))))
+            (list `("ExclusiveStartKey" . ,(if (jsown-object-p exclusive-start-key)
+                                               exclusive-start-key
+                                               (add-obj-to-list (build-desc-list exclusive-start-key))))))
           (when expression-attribute-values
             (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
           (when expression-attribute-names

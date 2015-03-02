@@ -12,6 +12,8 @@
   (:import-from :alexandria
                 :flatten
                 :length=)
+  (:import-from :sxql.clause
+                :where-clause)
   (:import-from :closer-mop
                 :class-direct-slots
                 :slot-definition-name))
@@ -168,33 +170,56 @@
         (values (build-dyna-table-obj table result) raw-result)))))
 
 @export
-(defgeneric select-dyna (table &optional where-clause)
-  (:method ((table symbol) &optional where-clause)
-    (select-dyna (find-class table) where-clause))
-  (:method ((table <dyna-table-class>) &optional where-clause)
-    (multiple-value-bind (result raw-result)
-        (if (and where-clause (queryable-op-p where-clause table))
-            (query-dyna table where-clause)
-            (scan-dyna table where-clause))
-      (values (mapcar #'(lambda (item)
-                          (build-dyna-table-obj table item))
-                      result)
-              raw-result))))
+(defgeneric select-dyna (table &rest args)
+  (:method ((table symbol) &rest args)
+    (apply #'select-dyna (find-class table) args))
+  (:method ((table <dyna-table-class>) &rest args)
+    (let* ((where-clause (when (and args (typep (car args) 'where-clause))
+                          (prog1 (car args)
+                            (setf args (cdr args)))))
+          (limit (getf args :limit))
+          (start-key (getf args :start-key))
+          (last-result (getf args :last-result))
+          (with-continue (getf args :with-continue))
+          (without-continue (getf args :without-continue))
+          (use-query (getf args :use-query))
+          (queryable (and where-clause (queryable-op-p where-clause table))))
+      (multiple-value-bind (result raw-result)
+          (if (or use-query queryable)
+              (query-dyna table where-clause :start-key start-key :limit limit)
+              (scan-dyna table where-clause :start-key start-key :limit limit))
+        (let ((last-evaluated-key (safety-val raw-result "LastEvaluatedKey")))
+          (if (and (not without-continue) (or (not limit) with-continue) last-evaluated-key)
+              (apply #'select-dyna table
+                     (append (when where-clause (list where-clause))
+                             (list :last-result (append last-result result)
+                                   :start-key last-evaluated-key
+                                   :with-continue t
+                                   :limit limit
+                                   :use-query (or use-query queryable))))
+              (values (mapcar #'(lambda (item)
+                                  (build-dyna-table-obj table item))
+                              (append last-result result))
+                      raw-result)))))))
 
-(defun scan-dyna (table where-clause)
+(defun scan-dyna (table where-clause &key start-key limit)
   (multiple-value-bind (expression attr-names attr-values)
       (when where-clause (to-filter-expression where-clause table))
     (scan (table-dyna table)
           :table-name (table-name table)
           :select "SPECIFIC_ATTRIBUTES"
+          :limit limit
+          :exclusive-start-key start-key
           :projection-expression (table-projection-expression table)
           :filter-expression expression
           :expression-attribute-names attr-names
           :expression-attribute-values attr-values)))
 
-(defun query-dyna (table where-clause)
+(defun query-dyna (table where-clause &key start-key limit)
   (query (table-dyna table)
          :table-name (table-name table)
+         :limit limit
+         :exclusive-start-key start-key
          :key-conditions (to-query-expressions where-clause table)
          :projection-expression (table-projection-expression table)))
 

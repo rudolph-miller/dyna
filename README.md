@@ -162,14 +162,19 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ;; => (#<THREAD >)
 
 (selet-dyna 'thread (where (:or (:= :forum-name "Amazon S3")
-                                (:= :forum-name "Amazon DynamoDB")))
+                                (:= :forum-name "Amazon DynamoDB"))))
 ;; => (#<THREAD > #<THREAD >)
 
-(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB")))
+(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB"))))
 ;; => (#<THREAD > #<THREAD >)
+
+(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB"))) :limit 1)
+;; => (#<THREAD >)
 ```
   - returns the list of objects.
   - can handle where-clause of SxQL.
+  - can handle `LastEvaluatedKey` in the response.
+  - `:limit` can restrict the number of results.
 
 ### save-dyna
 ```Lisp

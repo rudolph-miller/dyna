@@ -89,7 +89,8 @@
                       (find item primary-keys :test #'(lambda (a b) (equal a (attr-name b)))))
                   keys))))
   (:method ((op infix-op) table)
-    (find (op-key op table) (table-primary-keys table) :test #'(lambda (a b) (equal a (attr-name b)))))
+    (if (find (op-key op table) (table-primary-keys table) :test #'(lambda (a b) (equal a (attr-name b))))
+        t nil))
   (:method ((op infix-list-op) table) nil))
 
 (defun conjunctive-op-p (op)
