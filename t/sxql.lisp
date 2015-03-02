@@ -78,36 +78,38 @@
 (subtest "to-filter-expression"
   (let ((table (find-class 'thread)))
     (is-values (to-filter-expression (where (:= :forum-name "Amazon DynamoDB")) table)
-               '("#0 = :0" (("#0" . "ForumName")) ((":0" . "Amazon DynamoDB")))
+               '("#filter0 = :filter0" (("#filter0" . "ForumName")) ((":filter0" . "Amazon DynamoDB")))
                "with :=.")
 
     (is-values (to-filter-expression (where (:in :forum-name '("Amazon DynamoDB" "Amazon S3"))) table)
-               '("#0 IN (:0,:1)" (("#0" . "ForumName")) ((":0" . "Amazon DynamoDB") (":1" . "Amazon S3")))
+               '("#filter0 IN (:filter0,:filter1)"
+                 (("#filter0" . "ForumName"))
+                 ((":filter0" . "Amazon DynamoDB") (":filter1" . "Amazon S3")))
                "with :in.")
 
     (is-values (to-filter-expression (where (:and (:= :forum-name "Amazon DynamoDB")
                                                   (:= :subject "Really useful")))
                                      table)
-               '("(#0 = :0 AND #1 = :1)"
-                 (("#0" . "ForumName") ("#1" . "Subject"))
-                 ((":0" . "Amazon DynamoDB") (":1" . "Really useful")))
+               '("(#filter0 = :filter0 AND #filter1 = :filter1)"
+                 (("#filter0" . "ForumName") ("#filter1" . "Subject"))
+                 ((":filter0" . "Amazon DynamoDB") (":filter1" . "Really useful")))
                "with :and.")
 
     (is-values (to-filter-expression (where (:or (:= :forum-name "Amazon DynamoDB")
                                                  (:= :subject "Really useful")))
                                      table)
-               '("(#0 = :0 OR #1 = :1)"
-                 (("#0" . "ForumName") ("#1" . "Subject"))
-                 ((":0" . "Amazon DynamoDB") (":1" . "Really useful")))
+               '("(#filter0 = :filter0 OR #filter1 = :filter1)"
+                 (("#filter0" . "ForumName") ("#filter1" . "Subject"))
+                 ((":filter0" . "Amazon DynamoDB") (":filter1" . "Really useful")))
                "with :or.")
 
     (is-values (to-filter-expression (where (:and (:or (:= :forum-name "Amazon DynamoDB")
                                                        (:= :forum-name "Amazon S3"))
                                                   (:= :subject "Really useful")))
                                      table)
-               '("((#0 = :0 OR #0 = :1) AND #1 = :2)"
-                 (("#0" . "ForumName") ("#1" . "Subject"))
-                 ((":0" . "Amazon DynamoDB") (":1" . "Amazon S3") (":2" . "Really useful")))
+               '("((#filter0 = :filter0 OR #filter0 = :filter1) AND #filter1 = :filter2)"
+                 (("#filter0" . "ForumName") ("#filter1" . "Subject"))
+                 ((":filter0" . "Amazon DynamoDB") (":filter1" . "Amazon S3") (":filter2" . "Really useful")))
                "with nested operations.")))
 
 (finalize)
