@@ -2,6 +2,7 @@
 (defpackage dyna.sxql
   (:use :cl
         :dyna.error
+        :dyna.util
         :dyna.column
         :dyna.table)
   (:import-from :sxql.sql-type
@@ -123,18 +124,13 @@
 (defun include-hash-key (keys table)
   (find (attr-name (table-hash-key table)) keys :test #'equal))
 
-(defun gen-attr-table (list pre)
-  (loop for key in list
-        for i from 0
-        collecting (cons (format nil "~a~a" pre i) key)))
-
 @export
 (defun to-filter-expression (where-clause table)
   (let* ((expression (where-clause-expression where-clause))
          (keys (remove-duplicates (ensure-list (op-key expression table)) :test #'equal))
          (values (remove-duplicates (ensure-list (op-value expression table)) :test #'equal))
-         (attr-names (gen-attr-table keys #\#))
-         (attr-values (gen-attr-table values #\:)))
+         (attr-names (gen-attr-table keys "#filter"))
+         (attr-values (gen-attr-table values ":filter")))
     (values (%to-filter-expression expression attr-names attr-values table)
             attr-names
             attr-values)))

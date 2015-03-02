@@ -113,12 +113,14 @@
     (table-name)
   `(("TableName" . ,table-name)))
 
-(defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity)
+(defcontent get-item (&key table-name key projection-expression consistent-read return-consumed-capacity expression-attribute-names)
     (table-name key)
   (append (list  `("TableName" . ,table-name)
                  `("Key" . ,(add-obj-to-list (build-desc-list key))))
           (when projection-expression
             (list `("ProjectionExpression" . ,projection-expression)))
+          (when expression-attribute-names
+            (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
           (when consistent-read
             (list `("ConsistentRead" . ,consistent-read)))
           (when return-consumed-capacity

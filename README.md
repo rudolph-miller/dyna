@@ -300,6 +300,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:projection-expression`
     - `:consistent-read`
     - `:return-consumed-capacity`
+    - `:expression-attribute-names`
   - Unsupport
     - `:returnItem-collection-metrics`
     - `:return-values`

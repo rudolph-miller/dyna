@@ -166,10 +166,14 @@
               "can raise the error without :key.")
     (is (get-item-content dyna :table-name "Thread"
                                :key '(("Tags" . ("Multiple Items" "HelpMe")))
+                               :projection-expression "#0,#1"
+                               :expression-attribute-names '(("#0" . "ForumName") ("#1" . "Subject"))
                                :consistent-read t
                                :return-consumed-capacity "TOTAL")
         (build-json "\"TableName\":\"Thread\""
                     "\"Key\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]}}"
+                    "\"ProjectionExpression\":\"#0,#1\""
+                    "\"ExpressionAttributeNames\":{\"#0\":\"ForumName\",\"#1\":\"Subject\"}"
                     "\"ConsistentRead\":true"
                     "\"ReturnConsumedCapacity\":\"TOTAL\"")
         "can return the correct JSON object."))

@@ -116,3 +116,9 @@
 @export
 (defun safety-val (object key)
   (when (keyp object key) (val object key)))
+
+@export
+(defun gen-attr-table (list pre)
+  (loop for key in list
+        for i from 0
+        collecting (cons (format nil "~a~a" pre i) key)))

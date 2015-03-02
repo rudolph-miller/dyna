@@ -96,8 +96,10 @@
           finally (return obj))))
 
 (defun table-projection-expression (table)
-  (format nil "~{~a~^,~}"
-          (mapcar #'attr-name (class-direct-slots table))))
+  (let* ((names (mapcar #'attr-name (class-direct-slots table)))
+         (table (gen-attr-table names "#projection")))
+    (values (format nil "~{~a~^,~}" (mapcar #'car table))
+            table)))
 
 @export
 (defgeneric migrate-dyna-table (table)
@@ -126,12 +128,12 @@
     (let ((hash-key (table-hash-key table))
           (range-key (table-range-key table)))
       (create-table (table-dyna table)
-                    :table-name (table-name table)
-                    :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
-                                        (when range-key
-                                          `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
-                    :attribute-definitions (attribute-definitions table)
-                    :provisioned-throughput (provisioned-throughput table)))))
+          :table-name (table-name table)
+        :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
+                            (when range-key
+                              `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
+        :attribute-definitions (attribute-definitions table)
+        :provisioned-throughput (provisioned-throughput table)))))
 
 @export
 (defgeneric update-dyna-table (table)
@@ -162,11 +164,14 @@
       (when (and range-key (null (cdr values)))
         (error '<dyna-incomplete-argumet-error> :args '(:range-key)))
       (multiple-value-bind (result raw-result)
-          (get-item (table-dyna table) :table-name (table-name table)
-                                       :key (append (list (cons (attr-name hash-key) (car values)))
-                                                    (when range-key
-                                                      (list (cons (attr-name range-key) (cadr values)))))
-                                       :return-consumed-capacity "TOTAL")
+          (multiple-value-bind (projection attr-names) (table-projection-expression table)
+            (get-item (table-dyna table) :table-name (table-name table)
+                                         :key (append (list (cons (attr-name hash-key) (car values)))
+                                                      (when range-key
+                                                        (list (cons (attr-name range-key) (cadr values)))))
+                                         :projection-expression projection
+                                         :expression-attribute-names attr-names
+                                         :return-consumed-capacity "TOTAL"))
         (values (build-dyna-table-obj table result) raw-result)))))
 
 @export
@@ -175,15 +180,15 @@
     (apply #'select-dyna (find-class table) args))
   (:method ((table <dyna-table-class>) &rest args)
     (let* ((where-clause (when (and args (typep (car args) 'where-clause))
-                          (prog1 (car args)
-                            (setf args (cdr args)))))
-          (limit (getf args :limit))
-          (start-key (getf args :start-key))
-          (last-result (getf args :last-result))
-          (with-continue (getf args :with-continue))
-          (without-continue (getf args :without-continue))
-          (use-query (getf args :use-query))
-          (queryable (and where-clause (queryable-op-p where-clause table))))
+                           (prog1 (car args)
+                             (setf args (cdr args)))))
+           (limit (getf args :limit))
+           (start-key (getf args :start-key))
+           (last-result (getf args :last-result))
+           (with-continue (getf args :with-continue))
+           (without-continue (getf args :without-continue))
+           (use-query (getf args :use-query))
+           (queryable (and where-clause (queryable-op-p where-clause table))))
       (multiple-value-bind (result raw-result)
           (if (or use-query queryable)
               (query-dyna table where-clause :start-key start-key :limit limit)
@@ -203,25 +208,28 @@
                       raw-result)))))))
 
 (defun scan-dyna (table where-clause &key start-key limit)
-  (multiple-value-bind (expression attr-names attr-values)
+  (multiple-value-bind (expression filter-attr-names attr-values)
       (when where-clause (to-filter-expression where-clause table))
-    (scan (table-dyna table)
-          :table-name (table-name table)
-          :select "SPECIFIC_ATTRIBUTES"
-          :limit limit
-          :exclusive-start-key start-key
-          :projection-expression (table-projection-expression table)
-          :filter-expression expression
-          :expression-attribute-names attr-names
-          :expression-attribute-values attr-values)))
+    (multiple-value-bind (projection projection-attr-names) (table-projection-expression table)
+      (scan (table-dyna table)
+            :table-name (table-name table)
+            :select "SPECIFIC_ATTRIBUTES"
+            :limit limit
+            :exclusive-start-key start-key
+            :projection-expression projection
+            :filter-expression expression
+            :expression-attribute-names (append filter-attr-names projection-attr-names)
+            :expression-attribute-values attr-values))))
 
 (defun query-dyna (table where-clause &key start-key limit)
-  (query (table-dyna table)
-         :table-name (table-name table)
-         :limit limit
-         :exclusive-start-key start-key
-         :key-conditions (to-query-expressions where-clause table)
-         :projection-expression (table-projection-expression table)))
+  (multiple-value-bind (projection projection-attr-names) (table-projection-expression table)
+    (query (table-dyna table)
+           :table-name (table-name table)
+           :limit limit
+           :exclusive-start-key start-key
+           :key-conditions (to-query-expressions where-clause table)
+           :projection-expression projection
+           :expression-attribute-names projection-attr-names)))
 
 @export
 (defgeneric save-dyna (obj)
