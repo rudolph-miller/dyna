@@ -160,6 +160,13 @@ Most API return multiple values, the formaer is formatted result, and the latter
 
 (selet-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")))
 ;; => (#<THREAD >)
+
+(selet-dyna 'thread (where (:or (:= :forum-name "Amazon S3")
+                                (:= :forum-name "Amazon DynamoDB")))
+;; => (#<THREAD > #<THREAD >)
+
+(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB")))
+;; => (#<THREAD > #<THREAD >)
 ```
   - returns the list of objects.
   - can handle where-clause of SxQL.
