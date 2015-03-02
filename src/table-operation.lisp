@@ -6,7 +6,8 @@
         :dyna.operation
         :dyna.column 
         :dyna.table
-        :dyna.sxql)
+        :dyna.sxql
+        :dyna.expression)
   (:import-from :jsown
                 :val)
   (:import-from :alexandria
@@ -182,39 +183,16 @@
                         result)
                 raw-result)))))
 
-(defun queryable-p (table expressions)
-  (let ((keys (expression-keys expressions)))
-    (when (has-hash-key keys table)
-      (cond
-        ((not (conj-p expressions)) t)
-        ((not (some #'conj-p (cdr expressions)))
-         (when (not (equal (car expressions) "OR"))
-           (let* ((duplicated-p (not (length= keys (remove-duplicates keys :test #'equal))))
-                  (primary-keys (mapcar #'attr-name (table-primary-keys table)))
-                  (all-primary-keys-p (every #'(lambda (item)
-                                                 (find item primary-keys :test #'equal))
-                                             keys)))
-             (and (not duplicated-p) all-primary-keys-p))))
-        (t nil)))))
-
-(defun has-hash-key (keys table)
-  (find (attr-name (table-hash-key table)) keys :test #'equal))
-
-(defun expression-keys (expressions)
-  (flatten
-   (if (conj-p expressions)
-       (mapcar #'expression-keys (cdr expressions))
-       (car expressions))))
-
-(defun conj-p (expressions)
-  (let ((car (car expressions)))
-    (or (equal car "AND") (equal car "OR"))))
-
 (defun scan-dyna (table expressions)
-  (scan (table-dyna table)
-        :table-name (table-name table)
-        :select "SPECIFIC_ATTRIBUTES"
-        :projection-expression (table-projection-expression table)))
+  (multiple-value-bind (expression attr-names attr-values)
+      (when expressions (expressions2filter-expression expressions))
+    (scan (table-dyna table)
+          :table-name (table-name table)
+          :select "SPECIFIC_ATTRIBUTES"
+          :projection-expression (table-projection-expression table)
+          :filter-expression expression
+          :expression-attribute-names attr-names
+          :expression-attribute-values attr-values)))
 
 (defun query-dyna (table expressions)
   (let ((expressions (cond

@@ -23,6 +23,7 @@
                  (:test-file "content")
                  (:test-file "table")
                  (:test-file "sxql")
+                 (:test-file "expression")
                  (:test-file "table-operation"))))
 
   :defsystem-depends-on (:prove-asdf)

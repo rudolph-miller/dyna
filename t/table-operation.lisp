@@ -248,37 +248,6 @@
   (ok (not (find-dyna 'thread "NO FORUM NAME" "NO SUBJECT"))
       "can return NIL with no matching."))
 
-(subtest "queryable-p"
-  (let ((table (find-class 'thread)))
-    (ok (queryable-p table (yield (where (:= :forum-name "Amazon DynamoDB")) table))
-        "T with hash-key.")
-
-    (ok (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
-                                               (:= :subject "Really useful")))
-                                  table))
-        "T with hash-key and range-key.")
-
-    (ok (not (queryable-p table (yield (where (:or (:= :forum-name "Amazon DynamoDB")
-                                                   (:= :subject "Really useful")))
-                                       table)))
-        "NIL with :or.")
-
-    (ok (not (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
-                                                    (:= :forum-name "Amazon RDS")))
-                                       table)))
-        "NIL with two hash-keys.")
-
-    (ok (not (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
-                                                    (:= :tags "AWS")))
-                                       table)))
-        "NIL with non-primary-key.")
-
-    (ok (not (queryable-p table (yield (where (:and (:= :forum-name "Amazon DynamoDB")
-                                                    (:and (:= :subject "Really useful")
-                                                          (:= :tags "AWS"))))
-                                       table)))
-        "NIL with nested :and.")))
-
 (subtest "select-dyna"
   (is (mapcar #'thread-forum-name (select-dyna 'thread))
       '("Amazon DynamoDB" "Amazon RDS")
