@@ -44,8 +44,7 @@
                  (:file "column")
                  (:file "table" :depends-on ("structure" "column" "util"))
                  (:file "sxql" :depends-on ("table" "column" "error"))
-                 (:file "expression" :depends-on ("sxql" "table" "column"))
-                 (:file "table-operation" :depends-on ("expression" "sxql" "table" "operation" "error")))))
+                 (:file "table-operation" :depends-on ("sxql" "table" "operation" "error")))))
   :description "Common Lisp library for AWS DynamoDB."
   :long-description
   #.(with-open-file (stream (merge-pathnames

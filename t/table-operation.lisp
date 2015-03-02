@@ -9,8 +9,6 @@
         :dyna.sxql
         :dyna.table
         :dyna.table-operation)
-  (:import-from :dyna.table-operation
-                :queryable-p)
   (:import-from :alexandria
                 :set-equal)
   (:import-from :sxql

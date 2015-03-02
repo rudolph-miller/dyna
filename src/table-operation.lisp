@@ -6,8 +6,7 @@
         :dyna.operation
         :dyna.column 
         :dyna.table
-        :dyna.sxql
-        :dyna.expression)
+        :dyna.sxql)
   (:import-from :jsown
                 :val)
   (:import-from :alexandria
@@ -173,19 +172,18 @@
   (:method ((table symbol) &optional where-clause)
     (select-dyna (find-class table) where-clause))
   (:method ((table <dyna-table-class>) &optional where-clause)
-    (let ((expressions (when where-clause (yield where-clause table))))
-      (multiple-value-bind (result raw-result)
-          (if (queryable-p table expressions)
-              (query-dyna table expressions)
-              (scan-dyna table expressions))
-        (values (mapcar #'(lambda (item)
-                            (build-dyna-table-obj table item))
-                        result)
-                raw-result)))))
+    (multiple-value-bind (result raw-result)
+        (if (and where-clause (queryable-op-p where-clause table))
+            (query-dyna table where-clause)
+            (scan-dyna table where-clause))
+      (values (mapcar #'(lambda (item)
+                          (build-dyna-table-obj table item))
+                      result)
+              raw-result))))
 
-(defun scan-dyna (table expressions)
+(defun scan-dyna (table where-clause)
   (multiple-value-bind (expression attr-names attr-values)
-      (when expressions (expressions2filter-expression expressions))
+      (when where-clause (to-filter-expression where-clause table))
     (scan (table-dyna table)
           :table-name (table-name table)
           :select "SPECIFIC_ATTRIBUTES"
@@ -194,15 +192,11 @@
           :expression-attribute-names attr-names
           :expression-attribute-values attr-values)))
 
-(defun query-dyna (table expressions)
-  (let ((expressions (cond
-                       ((equal (car expressions) "AND") (cdr expressions))
-                       ((equal (car expressions) "OR") (error '<dyna-unsupported-op-erorr> :op expressions))
-                       (t (list expressions)))))
-    (query (table-dyna table)
-           :table-name (table-name table)
-           :key-conditions expressions
-           :projection-expression (table-projection-expression table))))
+(defun query-dyna (table where-clause)
+  (query (table-dyna table)
+         :table-name (table-name table)
+         :key-conditions (to-query-expressions where-clause table)
+         :projection-expression (table-projection-expression table)))
 
 @export
 (defgeneric save-dyna (obj)
