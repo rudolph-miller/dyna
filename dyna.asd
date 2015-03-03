@@ -45,7 +45,7 @@
                  (:file "table" :depends-on ("structure" "column" "util"))
                  (:file "sxql" :depends-on ("table" "column" "error"))
                  (:file "table-operation" :depends-on ("sxql" "table" "operation" "error")))))
-  :description "Common Lisp library for AWS DynamoDB."
+  :description "Dyna is an AWS DynamoDB ORM for Common Lisp."
   :long-description
   #.(with-open-file (stream (merge-pathnames
                              #p"README.md"
