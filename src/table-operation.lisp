@@ -38,11 +38,11 @@
     (describe-table (table-dyna table) :table-name (table-name table))))
 
 @export
-(defgeneric sync-table (table)
+(defgeneric ensure-table-synced (table)
   (:method ((table symbol))
-    (sync-table (find-class table)))
+    (ensure-table-synced (find-class table)))
   (:method ((table <dyna-table-class>))
-    (when (table-synced table) (return-from sync-table t))
+    (when (table-synced table) (return-from ensure-table-synced t))
     (unless (table-exist-p table)
       (error '<dyna-inexist-table> :table (table-name table)))
     (let* ((table-definition (val (describe-dyna table) "Table"))
@@ -158,7 +158,7 @@
   (:method ((table symbol) &rest values)
     (apply #'find-dyna (find-class table) values))
   (:method ((table <dyna-table-class>) &rest values)
-    (sync-table table)
+    (ensure-table-synced table)
     (let ((hash-key (table-hash-key table))
           (range-key (table-range-key table)))
       (when (and range-key (null (cdr values)))
@@ -179,6 +179,7 @@
   (:method ((table symbol) &rest args)
     (apply #'select-dyna (find-class table) args))
   (:method ((table <dyna-table-class>) &rest args)
+    (ensure-table-synced table)
     (let* ((where-clause (when (and args (typep (car args) 'where-clause))
                            (prog1 (car args)
                              (setf args (cdr args)))))
@@ -239,7 +240,7 @@
 (defgeneric save-dyna (obj)
   (:method ((obj <dyna-class>))
     (let ((table (class-of obj)))
-      (sync-table table)
+      (ensure-table-synced table)
       (put-item (table-dyna table)
                 :table-name (table-name table)
                 :item (loop for slot in (class-direct-slots table)
@@ -247,7 +248,6 @@
                             when (slot-boundp obj name)
                               collecting (cons (attr-name slot)
                                                (slot-value obj name)))))))
-
 
 @export
 (defgeneric delete-dyna (obj)
@@ -257,7 +257,7 @@
       (let* ((table (class-of obj))
              (hash-key (table-hash-key table))
              (range-key (table-range-key table)))
-        (sync-table table)
+        (ensure-table-synced table)
         (delete-item (table-dyna table)
                      :table-name (table-name table)
                      :key (append (list (cons (attr-name hash-key)

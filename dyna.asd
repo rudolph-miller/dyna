@@ -19,7 +19,7 @@
   :author "Rudolph-Miller"
   :license "MIT"
   :depends-on (:cl-syntax-annot
-               :drakma
+               :dexador
                :ironclad
                :flexi-streams
                :cl-base64

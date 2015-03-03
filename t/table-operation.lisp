@@ -56,11 +56,11 @@
       "Thread"
       "can return table-definition."))
 
-(subtest "sync-table"
+(subtest "ensure-table-synced"
   (ok (not (table-synced (find-class 'thread)))
       "Slot %synced is at first NIL.")
 
-  (is-error (sync-table (find-class 'inexist-table))
+  (is-error (ensure-table-synced (find-class 'inexist-table))
             '<dyna-inexist-table>
             "can raise the error with the inexisted table.")
 
@@ -75,7 +75,7 @@
     (:table-name "Thread")
     (:metaclass <dyna-table-class>))
 
-  (is-error (sync-table (find-class 'thread))
+  (is-error (ensure-table-synced (find-class 'thread))
             '<dyna-incompatible-table-schema>
             "can raise the error with the incompatible key schema.")
 
@@ -93,7 +93,7 @@
     (:table-name "Thread")
     (:metaclass <dyna-table-class>))
 
-  (is-error (sync-table (find-class 'thread))
+  (is-error (ensure-table-synced (find-class 'thread))
             '<dyna-incompatible-table-schema>
             "can raise the error with the incompatible attr types.")
 
@@ -114,7 +114,7 @@
     (:throuput (:read 1 :write 1))
     (:metaclass <dyna-table-class>))
 
-  (is-error (sync-table (find-class 'thread))
+  (is-error (ensure-table-synced (find-class 'thread))
             '<dyna-incompatible-table-schema>
             "can raise the error with the incompatible throughput.")
 
@@ -135,7 +135,7 @@
     (:throuput (:read 5 :write 5))
     (:metaclass <dyna-table-class>))
 
-  (ok (sync-table (find-class 'thread))
+  (ok (ensure-table-synced (find-class 'thread))
       "can return T if the table schema is correct.")
 
   (ok (table-synced (find-class 'thread))
