@@ -28,6 +28,8 @@
                 :where-clause
                 :where-clause-expression
                 :make-where-clause)
+  (:import-from :sxql.operator
+                :define-op)
   (:import-from :alexandria
                 :ensure-list
                 :make-keyword
@@ -39,6 +41,10 @@
 (in-package :dyna.sxql)
 
 (syntax:use-syntax :annot)
+
+(define-op (:list= infix-list-op))
+(import 'list=-op (find-package 'sxql.operator))
+(import 'make-list=-op (find-package 'sxql.operator))
 
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
@@ -80,9 +86,8 @@
 
   (:method ((op conjunctive-op) table)
     (let ((expressions (conjunctive-op-expressions op))
-          (keys (op-key op table))
-          (hash-key (attr-name (table-hash-key table)))
-          (primary-keys (table-primary-keys table)))
+          (keys (op-keys op table))
+          (hash-key (attr-name (table-hash-key table))))
       (and (and-op-p op)
            (some #'(lambda (op)
                       (queryable-op-p op table))
@@ -90,7 +95,7 @@
            (= (position hash-key keys :test #'equal) (position hash-key keys :from-end t :test #'equal)))))
 
   (:method ((op infix-op) table)
-    (equal (op-key op table) (attr-name (table-hash-key table))))
+    (equal (car (op-keys op table)) (attr-name (table-hash-key table))))
 
   (:method ((op infix-list-op) table) nil))
 
@@ -100,22 +105,28 @@
 (defun and-op-p (op)
   (equal (conjunctive-op-name op) "AND"))
 
-(defgeneric op-key (op table)
+(defgeneric op-keys (op table)
   (:method ((op conjunctive-op) table)
-    (flatten (mapcar #'(lambda (item) (op-key item table))
-                     (conjunctive-op-expressions op))))
+    (mapcan #'(lambda (item) (op-keys item table))
+                     (conjunctive-op-expressions op)))
+
   (:method ((op infix-op) table)
-    (yield (infix-op-left op) table))
+    (list (yield (infix-op-left op) table)))
 
   (:method ((op infix-list-op) table)
-    (yield (infix-list-op-left op) table)))
+    (list (yield (infix-list-op-left op) table))))
 
-(defgeneric op-value (op table)
+(defgeneric op-values (op table)
   (:method ((op conjunctive-op) table)
-    (flatten (mapcar #'(lambda (item) (op-value item table))
-                     (conjunctive-op-expressions op))))
+    (mapcan #'(lambda (item) (op-values item table))
+                     (conjunctive-op-expressions op)))
+
   (:method ((op infix-op) table)
-    (yield (infix-op-right op) table))
+    (list (yield (infix-op-right op) table)))
+
+  (:method ((op list=-op) table)
+    (list (mapcar #'(lambda (item) (yield item table))
+                  (infix-list-op-right op))))
 
   (:method ((op infix-list-op) table)
     (mapcar #'(lambda (item) (yield item table))
@@ -127,8 +138,8 @@
 @export
 (defun to-filter-expression (where-clause table)
   (let* ((expression (where-clause-expression where-clause))
-         (keys (remove-duplicates (ensure-list (op-key expression table)) :test #'equal))
-         (values (remove-duplicates (ensure-list (op-value expression table)) :test #'equal))
+         (keys (remove-duplicates (op-keys expression table) :test #'equal))
+         (values (remove-duplicates (op-values expression table) :test #'equal))
          (attr-names (gen-attr-table keys "#filter"))
          (attr-values (gen-attr-table values ":filter")))
     (values (%to-filter-expression expression attr-names attr-values table)
@@ -141,19 +152,22 @@
            (find-attr-value (value) (funcall (find-attr-thing value-env) value))
            (sub (exp)
              (etypecase exp
-               (conjunctive-op
-                (if (null (cdr (conjunctive-op-expressions exp)))
-                    (format nil "~a" (sub (car (conjunctive-op-expressions exp))))
-                    (format nil (format nil "(~~{~~a~~^ ~a ~~})" (conjunctive-op-name exp))
-                            (mapcar #'sub (conjunctive-op-expressions exp)))))
+               (conjunctive-op (if (null (cdr (conjunctive-op-expressions exp)))
+                                   (format nil "~a" (sub (car (conjunctive-op-expressions exp))))
+                                   (format nil (format nil "(~~{~~a~~^ ~a ~~})" (conjunctive-op-name exp))
+                                           (mapcar #'sub (conjunctive-op-expressions exp)))))
                (infix-op (format nil "~a ~a ~a"
-                                 (find-attr-name (op-key exp table))
+                                 (find-attr-name (car (op-keys exp table)))
                                  (infix-op-name exp)
-                                 (find-attr-value (op-value exp table))))
+                                 (find-attr-value (car (op-values exp table)))))
+               (list=-op (format nil "~a ~a ~a"
+                                 (find-attr-name (car (op-keys exp table)))
+                                 "="
+                                 (find-attr-value (car (op-values exp table)))))
                (infix-list-op (format nil "~a ~a ~a"
-                                      (find-attr-name (op-key exp table))
+                                      (find-attr-name (car (op-keys exp table)))
                                       (infix-list-op-name exp)
-                                      (format nil "(~{~a~^,~})" (mapcar #'find-attr-value (op-value exp table))))))))
+                                      (format nil "(~{~a~^,~})" (mapcar #'find-attr-value (op-values exp table))))))))
     (sub expression)))
 
 @export
@@ -181,7 +195,7 @@
           (rest))
       (values (mapcan #'(lambda (item)
                           (if (and (equal (sql-op-name item) "=")
-                                   (find (op-key item table) primary-keys :test #'equal))
+                                   (find (car (op-keys item table)) primary-keys :test #'equal))
                               (to-key-conditions item table)
                               (progn (push item rest) nil)))
                       (conjunctive-op-expressions op))

@@ -236,17 +236,17 @@
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")
                           ("Subject" . "Really useful")
-                          ("Tags" . "HelpMe")))
+                          ("Tags" . ("AWS" "HelpMe"))))
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon DynamoDB")
                           ("Subject" . "Really scalable")
-                          ("Tags" . "Scalable")))
+                          ("Tags" . ("Scalable"))))
 
 (put-item  *dyna* :table-name "Thread"
                   :item '(("ForumName" . "Amazon RDS")
                           ("Subject" . "Scalable")
-                          ("Tags" . "Easy")))
+                          ("Tags" . ("Easy"))))
 
 (subtest "find-dyna"
   (let ((result (find-dyna 'thread "Amazon DynamoDB" "Really useful")))
@@ -278,6 +278,10 @@
       '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
       "with where-clause with :in.")
 
+  (is (mapcar #'thread-tags (select-dyna 'thread (where (:list= :tags '("Scalable")))))
+      '(("Scalable"))
+      "with where-clause with :list=.")
+
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                                     (:= :subject "Really useful")))))
       '("Amazon DynamoDB")
@@ -295,8 +299,8 @@
       "with where-clause with nested :and and :or.")
 
   (is (mapcar #'thread-tags (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
-                                                              (:in :tags '("HelpMe"))))))
-      '("HelpMe")
+                                                              (:list= :tags '("AWS" "HelpMe"))))))
+      '(("AWS" "HelpMe"))
       "with non-hash-key.")
 
   (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :limit 1))

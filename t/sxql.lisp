@@ -23,7 +23,9 @@
             :attr-name "Subject"
             :attr-type :S
             :initarg :subject
-            :accessor thread-subject))
+            :accessor thread-subject)
+   (tags :attr-name "Tags"
+         :accessor thread-tags))
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
@@ -40,13 +42,13 @@
         "T with hash-key and range-key.")
 
     (ok (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
-                                     (:= :tags "AWS")))
+                                     (:list= :tags '("AWS"))))
                         table)
         "T with non-primary-key.")
 
     (ok (queryable-op-p (where (:and (:= :forum-name "Amazon DynamoDB")
                                      (:and (:= :subject "Really useful")
-                                           (:= :tags "AWS"))))
+                                           (:list= :tags '("AWS")))))
                         table)
         "T with nested :and.")
 
@@ -96,6 +98,12 @@
                  (("#filter0" . "ForumName"))
                  ((":filter0" . "Amazon DynamoDB") (":filter1" . "Amazon S3")))
                "with :in.")
+
+    (is-values (to-filter-expression (where (:list= :tags '("AWS" "HelpMe"))) table)
+               '("#filter0 = :filter0"
+                 (("#filter0" . "Tags"))
+                 ((":filter0" . ("AWS" "HelpMe"))))
+               "with :list=.")
 
     (is-values (to-filter-expression (where (:and (:= :forum-name "Amazon DynamoDB")
                                                   (:= :subject "Really useful")))
