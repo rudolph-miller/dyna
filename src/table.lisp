@@ -54,7 +54,7 @@
     (when (getf initargs :dyna)
       (setf (getf initargs :dyna)
             (eval (car (getf initargs :dyna)))))
-    (loop for key in '(:table-name :throuput :local-indexes :global-indexes)
+    (loop for key in '(:table-name :throuput)
           do (set-car initargs key))
     (unless (contains-class-or-subclasses (find-class '<dyna-class>) (getf initargs :direct-superclasses))
       (setf (getf initargs :direct-superclasses)

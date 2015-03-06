@@ -38,7 +38,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
-  (:local-indexes (last-post-date-time))
+  (:local-indexes last-post-date-time)
   (:metaclass <dyna-table-class>))
 
 (defclass inexist-table ()
@@ -163,7 +163,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
-    (:local-indexes (last-post-date-time))
+    (:local-indexes last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (ok (ensure-table-synced (find-class 'thread))
@@ -191,7 +191,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
-  (:local-indexes (last-post-date-time))
+  (:local-indexes last-post-date-time)
   (:metaclass <dyna-table-class>))
 
 (subtest "migrate-dyna-table"
@@ -228,7 +228,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
-    (:local-indexes (last-post-date-time))
+    (:local-indexes last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (ok (not (migrate-dyna-table 'thread))
@@ -252,7 +252,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 3))
-    (:local-indexes (last-post-date-time))
+    (:local-indexes last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (ok (migrate-dyna-table 'thread)
@@ -296,7 +296,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 3))
-    (:local-indexes (last-post-date-time))
+    (:local-indexes last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (migrate-dyna-table 'thread)
@@ -359,7 +359,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
-  (:local-indexes (last-post-date-time owner))
+  (:local-indexes last-post-date-time owner)
   (:metaclass <dyna-table-class>))
 
 (recreate-dyna-table 'thread)

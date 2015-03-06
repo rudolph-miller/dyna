@@ -37,7 +37,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
-  (:local-indexes (last-post-date-time tags))
+  (:local-indexes last-post-date-time tags)
   (:metaclass <dyna-table-class>))
 
 (subtest "queryable-op-p"
