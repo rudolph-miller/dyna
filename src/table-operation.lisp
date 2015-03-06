@@ -151,7 +151,7 @@
                             (when range-key
                               `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
         :local-secondary-indexes (mapcar #'(lambda (slot)
-                                             `(("IndexName" . ,(attr-name slot))
+                                             `(("IndexName" . ,(gen-local-index-name (attr-name slot)))
                                                ("KeySchema" . ((("AttributeName" . ,(attr-name hash-key))
                                                                 ("KeyType" . "HASH"))
                                                                (("AttributeName" . ,(attr-name slot))
@@ -269,7 +269,7 @@
             :expression-attribute-values attr-values))))
 
 (defun query-dyna (table where-clause &key start-key limit)
-  (multiple-value-bind (key-conditions filter-expression filter-attr-names attr-values)
+  (multiple-value-bind (key-conditions index-name filter-expression filter-attr-names attr-values)
       (to-key-conditions where-clause table)
     (multiple-value-bind (projection projection-attr-names) (table-projection-expression table)
       (query (table-dyna table)
@@ -277,6 +277,7 @@
              :limit limit
              :exclusive-start-key start-key
              :key-conditions key-conditions
+             :index-name index-name
              :projection-expression projection
              :filter-expression filter-expression
              :expression-attribute-names (append filter-attr-names projection-attr-names)

@@ -24,11 +24,20 @@
             :attr-type :S
             :initarg :subject
             :accessor thread-subject)
+   (last-post-date-time :key-type :range
+                        :attr-name "LastPostDateTime"
+                        :attr-type :S
+                        :initarg :last-post-date-time
+                        :accessor thread-last-post-date-time)
+   (owner :attr-name "Owner"
+          :accessor thread-owner)
    (tags :attr-name "Tags"
+         :attr-type :SS
          :accessor thread-tags))
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
+  (:local-indexes (last-post-date-time tags))
   (:metaclass <dyna-table-class>))
 
 (subtest "queryable-op-p"
@@ -63,27 +72,75 @@
         "NIL with two hash-keys.")))
 
 (subtest "to-key-conditions"
-  (is-values (to-key-conditions (where (:= "ForumName" "Amazon RDS")) (find-class 'thread))
-             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))))
+  (is-values (to-key-conditions (where (:= "ForumName" "Amazon RDS"))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+               nil)
              "with :=")
 
-  (is-values (to-key-conditions (where (:and (:= "ForumName" "Amazon RDS") (:= "Subject" "Scalable"))) (find-class 'thread))
+  (is-values (to-key-conditions (where (:and (:= "ForumName" "Amazon RDS")
+                                             (:= "Subject" "Scalable")))
+                                (find-class 'thread))
              '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
-                ("Subject" . (("AttributeValueList" . ("Scalable")) ("ComparisonOperator" . "EQ")))))
+                ("Subject" . (("AttributeValueList" . ("Scalable")) ("ComparisonOperator" . "EQ"))))
+               nil)
              "with :and")
 
-  (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS")) (find-class 'thread))
-             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))))
+  (is-values (to-key-conditions (where (:and (:= "ForumName" "Amazon RDS")
+                                             (:list= "Tags" '("Scalable" "Easy"))))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                ("Tags" . (("AttributeValueList" . ("Scalable" "Easy")) ("ComparisonOperator" . "EQ"))))
+               "Local-Tags-Index")
+             "with :list=")
+
+  (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS"))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+               nil)
              "with slot-name")
 
   (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
                                              (:in :subject '("AWS" "Really scalable"))))
                                 (find-class 'thread))
              '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+               nil
                "#filter0 IN (:filter0,:filter1)"
                (("#filter0" . "Subject"))
                ((":filter0" . "AWS") (":filter1" . "Really scalable")))
-             "with op related to no primary keys."))
+             "with op related to no primary keys.")
+
+  (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                             (:= :subject "AWS")
+                                             (:= :last-post-date-time "2014-12-25")))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                ("Subject" . (("AttributeValueList" . ("AWS")) ("ComparisonOperator" . "EQ"))))
+               nil
+               "#filter0 = :filter0"
+               (("#filter0" . "LastPostDateTime"))
+               ((":filter0" . "2014-12-25")))
+             "with more than one range keys.")
+
+  (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                             (:= :last-post-date-time "2014-12-25")))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                ("LastPostDateTime" . (("AttributeValueList" . ("2014-12-25")) ("ComparisonOperator" . "EQ"))))
+               "Local-LastPostDateTime-Index")
+             "with a local-index.")
+
+  (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                             (:= :last-post-date-time "2014-12-25")
+                                             (:list= :tags '("Scalable" "Easy"))))
+                                (find-class 'thread))
+             '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                ("LastPostDateTime" . (("AttributeValueList" . ("2014-12-25")) ("ComparisonOperator" . "EQ"))))
+               "Local-LastPostDateTime-Index"
+               "#filter0 = :filter0"
+               (("#filter0" . "Tags"))
+               ((":filter0" "Scalable" "Easy")))
+             "with more than one local-indexes."))
 
 (subtest "to-filter-expression"
   (let ((table (find-class 'thread)))

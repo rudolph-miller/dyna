@@ -345,6 +345,10 @@
             :attr-type :S
             :initarg :subject
             :accessor thread-subject)
+   (owner :attr-name "Owner"
+          :attr-type :S
+          :initarg :owner
+          :accessor thread-owner)
    (tags :attr-name "Tags"
          :initarg :tags
          :accessor thread-tags)
@@ -355,14 +359,14 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
-  (:local-indexes (last-post-date-time))
+  (:local-indexes (last-post-date-time owner))
   (:metaclass <dyna-table-class>))
 
 (recreate-dyna-table 'thread)
 
-(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful" :tags '("AWS" "HelpMe")))
-(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really scalable" :tags '("Scalable")))
-(save-dyna (make-instance 'thread :forum-name "Amazon RDS" :subject "Scalable" :tags '("Easy")))
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful" :owner "Rudolph":tags '("AWS" "HelpMe")))
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really scalable" :owner "Rudolph":tags '("Scalable")))
+(save-dyna (make-instance 'thread :forum-name "Amazon RDS" :subject "Scalable" :owner "Rudolph":tags '("Easy")))
 
 (subtest "find-dyna"
   (let ((result (find-dyna 'thread "Amazon DynamoDB" "Really useful")))
@@ -413,6 +417,11 @@
                                                                       (:= :subject "Really scalable"))))))
       '("Really scalable" "Really useful")
       "with where-clause with nested :and and :or.")
+
+  (is (mapcar #'thread-owner (select-dyna 'thread (where (:and (:= :forum-name "Amazon RDS")
+                                                               (:= :owner "Rudolph")))))
+      '("Rudolph")
+      "with a local-index.")
 
   (is (mapcar #'thread-tags (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                               (:list= :tags '("AWS" "HelpMe"))))))
