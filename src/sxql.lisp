@@ -200,7 +200,7 @@
           (range-key (attr-name (table-range-key table)))
           (local-indexes (mapcar #'attr-name (table-local-index-slots table)))
           (using-range-key-p)
-          (used-local-index)
+          (used-index-name)
           (rest))
       (values (mapcan #'(lambda (item)
                           (let ((attr-name (car (op-keys item table))))
@@ -213,11 +213,11 @@
                                                    (to-key-conditions item table))
                                             (if (find attr-name local-indexes :test #'equal)
                                                 (progn (setf using-range-key-p t)
-                                                       (setf used-local-index (gen-local-index-name attr-name))
+                                                       (setf used-index-name (gen-local-index-name attr-name))
                                                        (to-key-conditions item table))
                                                 (progn (push item rest) nil)))
                                         (progn (push item rest) nil)))
                                 (progn (push item rest) nil))))
                       (conjunctive-op-expressions op))
-              used-local-index
+              used-index-name
               (when rest (apply #'make-conjunctive-op (conjunctive-op-name op) rest))))))
