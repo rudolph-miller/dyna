@@ -8,7 +8,7 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
 
 ```Lisp
 (defvar *dyna* (make-dyna :credentials (cons (asdf::getenv "AWS_ACCESS_KEY")
-                                             (asdf:getenv "AWS_SECRET_KEY"))
+                                             (asdf::getenv "AWS_SECRET_KEY"))
                  :region "ap-northeast-1"))
  
 (defclass thread ()
