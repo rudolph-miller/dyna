@@ -258,6 +258,82 @@
   (ok (migrate-dyna-table 'thread)
       "can update the table if the definitions are changed."))
 
+(subtest "delete-dyna-table"
+  (ok (table-exist-p 'thread)
+      "Thread exists now.")
+
+  (delete-dyna-table 'thread)
+
+  (ok (not (table-exist-p 'thread))
+      "Thread doesn't exist now."))
+
+(migrate-dyna-table 'thread)
+
+(subtest "recreate-dyna-table"
+  (ok (recreate-dyna-table 'thread)
+      "can recreate table."))
+
+(subtest "save-dyna"
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (tags :attr-name "tags"
+           :initarg :tags
+           :accessor thread-tags)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 3))
+    (:local-indexes (last-post-date-time))
+    (:metaclass <dyna-table-class>))
+
+  (migrate-dyna-table 'thread)
+
+  (flet ((thread-equal (a b)
+           (and (equal (thread-forum-name a)
+                       (thread-forum-name b))
+                (set-equal (thread-tags a) (thread-tags b) :test #'equal))))
+
+    (let ((object (make-instance 'thread :forum-name "Amazon S3" :subject "Limiration" :tags '("AWS"))))
+      (save-dyna object)
+
+      (is (find-dyna 'thread "Amazon S3" "Limiration")
+          object
+          :test #'thread-equal
+          "can correctly insert the object.")
+
+      (setf (thread-tags object) '("AWS" "S3"))
+      (save-dyna object)
+
+      (is (find-dyna 'thread "Amazon S3" "Limiration")
+          object
+          :test #'thread-equal
+          "can correctly update the object.")))
+
+  (is-error (save-dyna (make-instance 'thread))
+            '<dyna-incomplete-argumet-error>
+            "can raise the error without attributes.")
+
+  (is-error (save-dyna (make-instance 'thread :forum-name "Amazon CloudFront"))
+            '<dyna-request-error>
+            "can raise the error with the incompatible attributes.")
+
+  (is-error (save-dyna (make-instance 'thread :forum-name "Amazon CloudFront" :subject 1))
+            '<dyna-request-error>
+            "can raise the error with the incompatible attr-type value."))
+
 (defclass thread ()
   ((forum-name :key-type :hash
                :attr-name "ForumName"
@@ -282,22 +358,11 @@
   (:local-indexes (last-post-date-time))
   (:metaclass <dyna-table-class>))
 
-(migrate-dyna-table 'thread)
+(recreate-dyna-table 'thread)
 
-(put-item  *dyna* :table-name "Thread"
-                  :item '(("ForumName" . "Amazon DynamoDB")
-                          ("Subject" . "Really useful")
-                          ("Tags" . ("AWS" "HelpMe"))))
-
-(put-item  *dyna* :table-name "Thread"
-                  :item '(("ForumName" . "Amazon DynamoDB")
-                          ("Subject" . "Really scalable")
-                          ("Tags" . ("Scalable"))))
-
-(put-item  *dyna* :table-name "Thread"
-                  :item '(("ForumName" . "Amazon RDS")
-                          ("Subject" . "Scalable")
-                          ("Tags" . ("Easy"))))
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful" :tags '("AWS" "HelpMe")))
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really scalable" :tags '("Scalable")))
+(save-dyna (make-instance 'thread :forum-name "Amazon RDS" :subject "Scalable" :tags '("Easy")))
 
 (subtest "find-dyna"
   (let ((result (find-dyna 'thread "Amazon DynamoDB" "Really useful")))
@@ -369,66 +434,5 @@
   (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB"))))
       2
       "continue without :limit or :without-continue."))
-
-(subtest "save-dyna"
-  (setf (find-class 'thread) nil)
-  (defclass thread ()
-    ((forum-name :key-type :hash
-                 :attr-name "ForumName"
-                 :attr-type :S
-                 :initarg :forum-name
-                 :accessor thread-forum-name)
-     (subject :key-type :range
-              :attr-name "Subject"
-              :attr-type :S
-              :initarg :subject
-              :accessor thread-subject)
-     (tags :attr-name "tags"
-           :initarg :tags
-           :accessor thread-tags)
-     (last-post-date-time :attr-name "LastPostDateTime"
-                          :attr-type :S
-                          :initarg :last-post-date-time
-                          :accessor thread-last-post-date-time))
-    (:dyna *dyna*)
-    (:table-name "Thread")
-    (:throuput (:read 5 :write 3))
-    (:local-indexes (last-post-date-time))
-    (:metaclass <dyna-table-class>))
-
-  (migrate-dyna-table 'thread)
-
-  (flet ((thread-equal (a b)
-           (and (equal (thread-forum-name a)
-                       (thread-forum-name b))
-                (set-equal (thread-tags a) (thread-tags b) :test #'equal))))
-
-    (let ((object (make-instance 'thread :forum-name "Amazon S3" :subject "Limiration" :tags '("AWS"))))
-      (save-dyna object)
-
-      (is (find-dyna 'thread "Amazon S3" "Limiration")
-          object
-          :test #'thread-equal
-          "can correctly insert the object.")
-
-      (setf (thread-tags object) '("AWS" "S3"))
-      (save-dyna object)
-
-      (is (find-dyna 'thread "Amazon S3" "Limiration")
-          object
-          :test #'thread-equal
-          "can correctly update the object.")))
-
-  (is-error (save-dyna (make-instance 'thread))
-            '<dyna-incomplete-argumet-error>
-            "can raise the error without attributes.")
-
-  (is-error (save-dyna (make-instance 'thread :forum-name "Amazon CloudFront"))
-            '<dyna-request-error>
-            "can raise the error with the incompatible attributes.")
-
-  (is-error (save-dyna (make-instance 'thread :forum-name "Amazon CloudFront" :subject 1))
-            '<dyna-request-error>
-            "can raise the error with the incompatible attr-type value."))
 
 (finalize)

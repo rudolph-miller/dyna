@@ -140,6 +140,7 @@
 (defgeneric create-dyna-table (table)
   (:method ((table symbol))
     (create-dyna-table (find-class table)))
+
   (:method ((table <dyna-table-class>))
     (let ((hash-key (table-hash-key table))
           (range-key (table-range-key table))
@@ -161,9 +162,27 @@
         :provisioned-throughput (provisioned-throughput table)))))
 
 @export
+(defgeneric delete-dyna-table (table)
+  (:method ((table symbol))
+    (delete-dyna-table (find-class table)))
+
+  (:method ((table <dyna-table-class>))
+    (delete-table (table-dyna table) :table-name (table-name table))))
+
+@export
+(defgeneric recreate-dyna-table (table)
+  (:method ((table symbol))
+    (recreate-dyna-table (find-class table)))
+
+  (:method ((table <dyna-table-class>))
+    (delete-dyna-table table)
+    (migrate-dyna-table table)))
+
+@export
 (defgeneric update-dyna-table (table)
   (:method ((table symbol))
     (update-dyna-table (find-class table)))
+
   (:method ((table <dyna-table-class>))
     (let* ((table-definition (val (describe-dyna table) "Table"))
            (attr-definitions (val table-definition "AttributeDefinitions"))
@@ -182,6 +201,7 @@
 (defgeneric find-dyna (table &rest values)
   (:method ((table symbol) &rest values)
     (apply #'find-dyna (find-class table) values))
+
   (:method ((table <dyna-table-class>) &rest values)
     (ensure-table-synced table)
     (let ((hash-key (table-hash-key table))
@@ -203,6 +223,7 @@
 (defgeneric select-dyna (table &rest args)
   (:method ((table symbol) &rest args)
     (apply #'select-dyna (find-class table) args))
+
   (:method ((table <dyna-table-class>) &rest args)
     (ensure-table-synced table)
     (let* ((where-clause (when (and args (typep (car args) 'where-clause))
