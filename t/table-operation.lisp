@@ -30,10 +30,15 @@
             :attr-name "Subject"
             :attr-type :S
             :initarg :subject
-            :accessor thread-subject))
+            :accessor thread-subject)
+   (last-post-date-time :attr-name "LastPostDateTime"
+                        :attr-type :S
+                        :initarg :last-post-date-time
+                        :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
+  (:local-indexes (last-post-date-time))
   (:metaclass <dyna-table-class>))
 
 (defclass inexist-table ()
@@ -135,6 +140,32 @@
     (:throuput (:read 5 :write 5))
     (:metaclass <dyna-table-class>))
 
+  (is-error (ensure-table-synced (find-class 'thread))
+            '<dyna-incompatible-table-schema>
+            "can raise the error with the incompatible local-indexes.")
+
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 5))
+    (:local-indexes (last-post-date-time))
+    (:metaclass <dyna-table-class>))
+
   (ok (ensure-table-synced (find-class 'thread))
       "can return T if the table schema is correct.")
 
@@ -152,10 +183,15 @@
             :attr-name "Subject"
             :attr-type :S
             :initarg :subject
-            :accessor thread-subject))
+            :accessor thread-subject)
+   (last-post-date-time :attr-name "LastPostDateTime"
+                        :attr-type :S
+                        :initarg :last-post-date-time
+                        :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
+  (:local-indexes (last-post-date-time))
   (:metaclass <dyna-table-class>))
 
 (subtest "migrate-dyna-table"
@@ -184,10 +220,15 @@
               :accessor thread-subject)
      (tags :attr-name "Tags"
            :initarg :tags
-           :accessor thread-tags))
+           :accessor thread-tags)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
+    (:local-indexes (last-post-date-time))
     (:metaclass <dyna-table-class>))
 
   (ok (not (migrate-dyna-table 'thread))
@@ -203,10 +244,15 @@
               :attr-name "Subject"
               :attr-type :S
               :initarg :subject
-              :accessor thread-subject))
+              :accessor thread-subject)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 3))
+    (:local-indexes (last-post-date-time))
     (:metaclass <dyna-table-class>))
 
   (ok (migrate-dyna-table 'thread)
@@ -225,10 +271,15 @@
             :accessor thread-subject)
    (tags :attr-name "Tags"
          :initarg :tags
-         :accessor thread-tags))
+         :accessor thread-tags)
+   (last-post-date-time :attr-name "LastPostDateTime"
+                        :attr-type :S
+                        :initarg :last-post-date-time
+                        :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
+  (:local-indexes (last-post-date-time))
   (:metaclass <dyna-table-class>))
 
 (migrate-dyna-table 'thread)
@@ -334,10 +385,15 @@
               :accessor thread-subject)
      (tags :attr-name "tags"
            :initarg :tags
-           :accessor thread-tags))
+           :accessor thread-tags)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 3))
+    (:local-indexes (last-post-date-time))
     (:metaclass <dyna-table-class>))
 
   (migrate-dyna-table 'thread)

@@ -21,11 +21,15 @@
        (subject :key-type :range
                 :attr-name "Subject"
                 :attr-type :S
-                :initarg :subject))
+                :initarg :subject)
+       (last-post-date-time :attr-name "LastPostDateTime"
+                            :attr-type :S
+                            :initarg :last-post-date-time))
       (:dyna (make-dyna :credentials (cons "DYNA_TEST_ACCESS_KEY" "DYNA_TEST_SECRET_KEY")
                         :region "local"))
       (:table-name "Thread")
       (:throuput (:write 5 :read 5))
+      (:local-indexes (last-post-date-time))
       (:metaclass <dyna-table-class>))
     "can create class having <dyna-table-class> as metaclass.")
 
@@ -68,11 +72,7 @@
 
   (is (attr-name (table-hash-key table))
       "ForumName"
-      "can handle :key-type and :attr-name with :key-type :hash.")
-
-  (is (attr-name (table-range-key table))
-      "Subject"
-      "can handle :key-type and :attr-name with :key-type :hash.")
+      "can handle :key-type and :attr-name.")
 
   (is (attr-name (table-hash-key table2))
       "forum-name"
@@ -90,11 +90,11 @@
   (subtest "table-range-key"
     (is (attr-name (table-range-key table))
         "Subject"
-        "can return range-key of the table."))
+        "can return range-keyes of the table."))
 
-  (subtest "table-primary-keys"
-    (is (mapcar #'attr-name (table-primary-keys table))
-        '("ForumName" "Subject")
-        "can return the list of keys.")))
+  (subtest "table-range-keys"
+    (is (mapcar #'attr-name (table-range-keys table))
+        '("Subject" "LastPostDateTime")
+        "can return range-keyes of the table.")))
 
 (finalize)

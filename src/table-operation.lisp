@@ -25,6 +25,7 @@
 (defgeneric table-exist-p (table)
   (:method ((table symbol))
     (table-exist-p (find-class table)))
+
   (:method ((table <dyna-table-class>))
     (if (find (table-name table) (list-tables (table-dyna table)) :test #'equal)
         t nil)))
@@ -34,6 +35,7 @@
 (defgeneric describe-dyna (table)
   (:method ((table symbol))
     (describe-dyna (find-class table)))
+
   (:method ((table <dyna-table-class>))
     (describe-table (table-dyna table) :table-name (table-name table))))
 
@@ -41,6 +43,7 @@
 (defgeneric ensure-table-synced (table)
   (:method ((table symbol))
     (ensure-table-synced (find-class table)))
+
   (:method ((table <dyna-table-class>))
     (when (table-synced table) (return-from ensure-table-synced t))
     (unless (table-exist-p table)
@@ -48,10 +51,12 @@
     (let* ((table-definition (val (describe-dyna table) "Table"))
            (key-schema (val table-definition "KeySchema"))
            (attr-definitions (val table-definition "AttributeDefinitions"))
-           (throughput (val table-definition "ProvisionedThroughput")))
+           (throughput (val table-definition "ProvisionedThroughput"))
+           (local-indexes (safety-val table-definition "LocalSecondaryIndexes")))
       (unless (and (equal-key-schema-p key-schema table)
                    (equal-attr-types-p attr-definitions table)
-                   (equal-throughput-p throughput table))
+                   (equal-throughput-p throughput table)
+                   (or (not local-indexes) (equal-local-indexes-p local-indexes table)))
         (error '<dyna-incompatible-table-schema> :table (table-name table)))
       (setf (table-synced table) t))))
 
@@ -69,9 +74,9 @@
            (equal range-key (attr-name-if-exist table-range-key))))))
 
 (defun table-should-define-slots (table)
-  (remove-if-not #'(lambda (slot)
-                     (key-type slot))
-                 (class-direct-slots table)))
+  (list* (table-hash-key table)
+         (table-range-key table)
+         (table-local-index-slots table)))
 
 (defun equal-attr-types-p (schema table)
   (flet ((find-attr-type (name)
@@ -86,6 +91,16 @@
 (defun equal-throughput-p (schema table)
   (and (= (val schema "ReadCapacityUnits") (getf (table-throughput table) :read))
        (= (val schema "WriteCapacityUnits") (getf (table-throughput table) :write))))
+
+(defun equal-local-indexes-p (local-indexes table)
+  (let ((local-index-attr-names (mapcar #'attr-name (table-local-index-slots table))))
+    (flet ((get-range-key-attr-name (obj)
+             (val (find "RANGE" (val obj "KeySchema")
+                        :key #'(lambda (item) (val item "KeyType"))
+                        :test #'equal)
+                  "AttributeName")))
+      (loop for item in local-indexes
+            always (find (get-range-key-attr-name item) local-index-attr-names :test #'equal)))))
 
 (defun build-dyna-table-obj (table result)
   (when result
@@ -105,6 +120,7 @@
 (defgeneric migrate-dyna-table (table)
   (:method ((table symbol))
     (migrate-dyna-table (find-class table)))
+
   (:method ((table <dyna-table-class>))
     (if (table-exist-p table)
         (update-dyna-table table)
@@ -126,12 +142,21 @@
     (create-dyna-table (find-class table)))
   (:method ((table <dyna-table-class>))
     (let ((hash-key (table-hash-key table))
-          (range-key (table-range-key table)))
+          (range-key (table-range-key table))
+          (local-index-slots (table-local-index-slots table)))
       (create-table (table-dyna table)
           :table-name (table-name table)
         :key-schema (append `((("AttributeName" . ,(attr-name hash-key)) ("KeyType" . "HASH")))
                             (when range-key
                               `((("AttributeName" . ,(attr-name range-key)) ("KeyType" . "RANGE")))))
+        :local-secondary-indexes (mapcar #'(lambda (slot)
+                                             `(("IndexName" . ,(attr-name slot))
+                                               ("KeySchema" . ((("AttributeName" . ,(attr-name hash-key))
+                                                                ("KeyType" . "HASH"))
+                                                               (("AttributeName" . ,(attr-name slot))
+                                                                ("KeyType" . "RANGE"))))
+                                               ("Projection" . (("ProjectionType" . "ALL")))))
+                                         local-index-slots)
         :attribute-definitions (attribute-definitions table)
         :provisioned-throughput (provisioned-throughput table)))))
 
@@ -221,7 +246,7 @@
             :filter-expression expression
             :expression-attribute-names (append filter-attr-names projection-attr-names)
             :expression-attribute-values attr-values))))
- 
+
 (defun query-dyna (table where-clause &key start-key limit)
   (multiple-value-bind (key-conditions filter-expression filter-attr-names attr-values)
       (to-key-conditions where-clause table)

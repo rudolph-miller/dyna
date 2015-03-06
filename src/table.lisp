@@ -24,6 +24,8 @@
   ((table-name :type (or cons string) :initarg :table-name)
    (dyna :type (or cons dyna) :initarg :dyna :accessor table-dyna)
    (throughput :type cons :initarg :throuput :accessor table-throughput)
+   (local-indexes :type cons :initarg :local-indexes :accessor table-local-indexes :initform nil)
+   (global-indexes :type cons :initarg :global-indexes :accessor table-global-indexes :initform nil)
    (%synced :type boolean :initform nil :accessor table-synced)))
 
 @export
@@ -52,7 +54,7 @@
     (when (getf initargs :dyna)
       (setf (getf initargs :dyna)
             (eval (car (getf initargs :dyna)))))
-    (loop for key in '(:table-name :throuput)
+    (loop for key in '(:table-name :throuput :local-indexes :global-indexes)
           do (set-car initargs key))
     (unless (contains-class-or-subclasses (find-class '<dyna-class>) (getf initargs :direct-superclasses))
       (setf (getf initargs :direct-superclasses)
@@ -84,21 +86,44 @@
 
 @export
 (defgeneric table-hash-key (class)
-  (:method (class)
-    (find-key-type-key class "HASH")))
+  (:method ((class symbol))
+    (table-hash-key (find-class class)))
+
+  (:method ((class <dyna-table-class>))
+    (find-the-key-type-key class "HASH")))
 
 @export
 (defgeneric table-range-key (class)
-  (:method (class)
-    (find-key-type-key class "RANGE")))
-
-(defgeneric find-key-type-key (class type)
-  (:method ((class symbol) type)
-    (find-key-type-key (find-class class) type))
-  (:method ((class <dyna-table-class>) type)
-    (find type (class-direct-slots class) :key #'key-type :test #'equal)))
+  (:method ((class symbol))
+    (table-range-key (find-class class)))
+  
+  (:method ((class <dyna-table-class>))
+    (find-the-key-type-key class "RANGE")))
 
 @export
-(defgeneric table-primary-keys (class)
-  (:method (class)
-    (list (table-hash-key class) (table-range-key class))))
+(defgeneric table-local-index-slots (class)
+  (:method ((class symbol))
+    (table-local-index-slots (find-class class)))
+
+  (:method ((class <dyna-table-class>))
+    (mapcar #'(lambda (name) (find-the-name-key class name))
+            (table-local-indexes class))))
+
+@export
+(defgeneric table-range-keys (class)
+  (:method ((class symbol))
+    (table-range-keys (find-class class)))
+
+  (:method ((class <dyna-table-class>))
+    (cons (table-range-key class)
+          (table-local-index-slots class))))
+
+(defun find-the-key-type-key (class type)
+  (find type (class-direct-slots class) :key #'key-type :test #'equal))
+
+(defun find-the-name-key (class name)
+  (find (symbol-name name)
+        (class-direct-slots class)
+        :key #'(lambda (slot)
+                 (symbol-name (slot-definition-name slot)))
+        :test #'equal))
