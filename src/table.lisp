@@ -24,8 +24,8 @@
   ((table-name :type (or cons string) :initarg :table-name)
    (dyna :type (or cons dyna) :initarg :dyna :accessor table-dyna)
    (throughput :type cons :initarg :throuput :accessor table-throughput)
-   (local-indexes :type cons :initarg :local-indexes :accessor table-local-indexes :initform nil)
-   (global-indexes :type cons :initarg :global-indexes :accessor table-global-indexes :initform nil)
+   (local-indexes :type (or null cons) :initarg :local-indexes :accessor table-local-indexes :initform nil)
+   (global-indexes :type (or null cons) :initarg :global-indexes :accessor table-global-indexes :initform nil)
    (%synced :type boolean :initform nil :accessor table-synced)))
 
 @export
