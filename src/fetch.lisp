@@ -31,5 +31,5 @@
                              (:authorization . ,(request-authorization request))
                              (:x-amz-date . ,(request-x-amz-date request))
                              (:x-amz-target . ,target)
-                             (:content-tpe . ,(request-content-type request)))
+                             (:content-type . ,(request-content-type request)))
                   :content content)))

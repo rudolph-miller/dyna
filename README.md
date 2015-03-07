@@ -442,7 +442,6 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:table-name`
     - `:attribute-definitions`
     - `:provisioned-throughput`
-  - Unsupport
     - `:global-secondary-indexe`
 
 ## See Also

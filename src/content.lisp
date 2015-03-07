@@ -38,7 +38,8 @@
   (mapcar #'(lambda (index)
               (add-obj-to-list
                (mapcar #'(lambda (item)
-                           (cond ((string= (car item) "Projection")
+                           (cond ((or (string= (car item) "Projection")
+                                      (string= (car item) "ProvisionedThroughput"))
                                   (cons (car item) (add-obj-to-list (cdr item))))
                                  ((string= (car item) "KeySchema")
                                   (cons (car item) (mapcar #'(lambda (item)
@@ -93,7 +94,7 @@
           (when local-secondary-indexes
             (list `("LocalSecondaryIndexes" . ,(build-secondary-index-obj local-secondary-indexes))))
           (when global-secondary-indexes
-            (list `("GlobalSecodaryIndexes" . ,(build-secondary-index-obj global-secondary-indexes))))))
+            (list `("GlobalSecondaryIndexes" . ,(build-secondary-index-obj global-secondary-indexes))))))
 
 
 (defcontent delete-item (&key table-name key condition-expression return-values)
@@ -262,10 +263,29 @@
           (when return-consumed-capacity
             (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
-(defcontent update-table (&key table-name attribute-definitions provisioned-throughput)
+(defcontent update-table (&key table-name attribute-definitions provisioned-throughput global-secondary-index-updates)
     (table-name)
   (append (list  `("TableName" . ,table-name))
           (when attribute-definitions
             (list `("AttributeDefinitions" . ,(build-obj-list attribute-definitions))))
           (when provisioned-throughput
-            (list `("ProvisionedThroughput" . ,(add-obj-to-list provisioned-throughput))))))
+            (list `("ProvisionedThroughput" . ,(add-obj-to-list provisioned-throughput))))
+          (when global-secondary-index-updates
+            (list `("GlobalSecondaryIndexUpdates" . ,(mapcar #'(lambda (op)
+                                                             (setf (cdar op)
+                                                                   (add-obj-to-list
+                                                                    (mapcar #'(lambda (item)
+                                                                                (cond
+                                                                                  ((equal (car item) "KeySchema")
+                                                                                   (setf (cdr item)
+                                                                                         (mapcar #'(lambda (kv)
+                                                                                                     (add-obj-to-list kv))
+                                                                                                 (cdr item))))
+                                                                                  ((or (equal (car item) "Projection")
+                                                                                       (equal (car item) "ProvisionedThroughput"))
+                                                                                   (setf (cdr item)
+                                                                                         (add-obj-to-list (cdr item)))))
+                                                                                item)
+                                                                            (cdar op))))
+                                                             (add-obj-to-list op))
+                                                         global-secondary-index-updates))))))

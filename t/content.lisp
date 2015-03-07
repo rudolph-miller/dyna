@@ -368,16 +368,26 @@
                                                                    ("WriteCapacityUnits" . 5)))
               '<dyna-incomplete-argumet-error>
               "can raise the error without :table-name.")
-    (is (update-table-content dyna :table-name "Thread"
-                                   :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
-                                                            (("AttributeName" . "Subject") ("AttributeType" . "S"))
-                                                            (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
-                                   :provisioned-throughput '(("ReadCapacityUnits" . 5)
-                                                             ("WriteCapacityUnits" . 5)))
+    (is (update-table-content dyna
+                              :table-name "Thread"
+                              :attribute-definitions '((("AttributeName" . "ForumName") ("AttributeType" . "S"))
+                                                       (("AttributeName" . "Subject") ("AttributeType" . "S"))
+                                                       (("AttributeName" . "LastPostDateTime") ("AttributeType" . "S")))
+                              :provisioned-throughput '(("ReadCapacityUnits" . 5)
+                                                        ("WriteCapacityUnits" . 5))
+                              :global-secondary-index-updates '((("Create" . (("IndexName" . "Global-Subject-LastPostDateTime-Index")
+                                                                       ("KeySchema" . ((("AttributeName" . "Subject")
+                                                                                        ("KeyType" . "HASH"))
+                                                                                       (("AttributeName" . "LastPostDateTime")
+                                                                                        ("KeyType" . "RANGE"))))
+                                                                       ("Projection" .(("ProjectionType" . "ALL")))
+                                                                       ("ProvisionedThroughput" . (("ReadCapacityUnits" . 5)
+                                                                                                   ("WriteCapacityUnits" . 5))))))))
         (build-json
          "\"TableName\":\"Thread\""
          "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"
-         "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}")
+         "\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}"
+         "\"GlobalSecondaryIndexUpdates\":[{\"Create\":{\"IndexName\":\"Global-Subject-LastPostDateTime-Index\",\"KeySchema\":[{\"AttributeName\":\"Subject\",\"KeyType\":\"HASH\"},{\"AttributeName\":\"LastPostDateTime\",\"KeyType\":\"RANGE\"}],\"Projection\":{\"ProjectionType\":\"ALL\"},\"ProvisionedThroughput\":{\"ReadCapacityUnits\":5,\"WriteCapacityUnits\":5}}}]")
         "can return the correct JSON object.")))
 
 (finalize)
