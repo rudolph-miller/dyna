@@ -434,7 +434,15 @@ Most API return multiple values, the formaer is formatted result, and the latter
                                             (("AttributeName" . "LastPostDateTime")
                                             ("AttributeType" . "S")))
                    :provisioned-throughput '(("ReadCapacityUnits" . 5)
-                                             ("WriteCapacityUnits" . 5)))
+                                             ("WriteCapacityUnits" . 5))
+                   :global-secondary-index-updates '((("Create" . (("IndexName" . "LastPostIndex")
+                                                                   ("KeySchema" . ((("AttributeName" . "Subject")
+                                                                                    ("KeyType" . "HASH"))
+                                                                                   (("AttributeName" . "LastPostDateTime")
+                                                                                    ("KeyType" . "RANGE"))))
+                                                                   ("Projection" .(("ProjectionType" . "ALL")))
+                                                                   ("ProvisionedThroughput" . (("ReadCapacityUnits" . 5)
+                                                                                    ("WriteCapacityUnits" . 5))))))))
 ;; => T
 ```
   - returns t if the operation succeeded.
@@ -442,7 +450,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:table-name`
     - `:attribute-definitions`
     - `:provisioned-throughput`
-    - `:global-secondary-indexe`
+    - `:global-secondary-index-updates`
 
 ## See Also
 
