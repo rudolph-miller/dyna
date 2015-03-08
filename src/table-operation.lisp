@@ -13,7 +13,11 @@
                 :flatten
                 :length=)
   (:import-from :sxql.clause
-                :where-clause)
+                :where-clause
+                :limit-clause
+                :limit-clause-count1)
+  (:import-from :sxql.sql-type
+                :sql-variable-value)
   (:import-from :closer-mop
                 :class-direct-slots
                 :slot-definition-name))
@@ -345,9 +349,10 @@
   (:method ((table <dyna-table-class>) &rest args)
     (ensure-table-synced table)
     (let* ((where-clause (when (and args (typep (car args) 'where-clause))
-                           (prog1 (car args)
-                             (setf args (cdr args)))))
-           (limit (getf args :limit))
+                           (pop args)))
+           (limit (or (when (and args (typep (car args) 'limit-clause))
+                        (sql-variable-value (limit-clause-count1 (pop args))))
+                      (getf args :limit)))
            (start-key (getf args :start-key))
            (last-result (getf args :last-result))
            (with-continue (getf args :with-continue))
