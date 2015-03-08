@@ -83,7 +83,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throughput (:read 5 :wirte 5)
-  (:local-indexes owner)
+  (:lsi owner)
   (:metaclass <dyna-table-class>))
 
 ;; Simpler Style
@@ -105,7 +105,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - `:dyna` can take `dyna` object.
   - `:table-name` can take table name of DynamoDB's table.(Optional.)
   - `:throughput` is the provisioned throuput of the table.
-  - `:local-indexes` is columns of LocalSecondaryIndexes.
+  - `:lsi` is columns of LocalSecondaryIndexes.
   - `:key-type` in slot should be `:hash` or `:range` and is the same as DynamoDB's table.
   - `:attr-name` in slot is AttributeName of Item in DynamoDB's table.(Optional.)
   - `:attr-type` in slot is AttributeType of Item in DynamoDB's table.(Optional without key attributes.)
