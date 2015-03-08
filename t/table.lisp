@@ -29,7 +29,8 @@
                         :region "local"))
       (:table-name "Thread")
       (:throuput (:write 5 :read 5))
-      (:local-indexes last-post-date-time)
+      (:lsi last-post-date-time)
+      (:gsi (:hash subject :range last-post-date-time))
       (:metaclass <dyna-table-class>))
     "can create class having <dyna-table-class> as metaclass.")
 

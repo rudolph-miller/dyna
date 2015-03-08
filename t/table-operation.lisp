@@ -38,7 +38,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
-  (:local-indexes last-post-date-time)
+  (:lsi last-post-date-time)
   (:metaclass <dyna-table-class>))
 
 (defclass inexist-table ()
@@ -142,7 +142,7 @@
 
   (is-error (ensure-table-synced (find-class 'thread))
             '<dyna-incompatible-table-schema>
-            "can raise the error with the incompatible local-indexes.")
+            "can raise the error with the incompatible lsi.")
 
   (setf (find-class 'thread) nil)
   (defclass thread ()
@@ -163,7 +163,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
-    (:local-indexes last-post-date-time)
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (ok (ensure-table-synced (find-class 'thread))
@@ -191,7 +191,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
-  (:local-indexes last-post-date-time)
+  (:lsi last-post-date-time)
   (:metaclass <dyna-table-class>))
 
 (subtest "migrate-dyna-table"
@@ -228,7 +228,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
-    (:local-indexes last-post-date-time)
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (ok (not (migrate-dyna-table 'thread))
@@ -252,7 +252,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 3))
-    (:local-indexes last-post-date-time)
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (ok (migrate-dyna-table 'thread)
@@ -296,7 +296,7 @@
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 3))
-    (:local-indexes last-post-date-time)
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (migrate-dyna-table 'thread)
@@ -359,7 +359,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
-  (:local-indexes last-post-date-time owner)
+  (:lsi last-post-date-time owner)
   (:metaclass <dyna-table-class>))
 
 (recreate-dyna-table 'thread)

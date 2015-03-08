@@ -124,9 +124,9 @@
         collecting (cons (format nil "~a~a" pre i) key)))
 
 @export
-(defun gen-local-index-name (attr-name)
+(defun gen-lsi-name (attr-name)
   (format nil "Local-~a-Index" attr-name))
 
 @export
-(defun gen-global-index-name (attr-name)
+(defun gen-gsi-name (attr-name)
   (format nil "Global-~a-Index" attr-name))

@@ -37,7 +37,7 @@
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
-  (:local-indexes last-post-date-time tags)
+  (:lsi last-post-date-time tags)
   (:metaclass <dyna-table-class>))
 
 (subtest "queryable-op-p"
@@ -140,7 +140,7 @@
                "#filter0 = :filter0"
                (("#filter0" . "Tags"))
                ((":filter0" "Scalable" "Easy")))
-             "with more than one local-indexes."))
+             "with more than one lsi."))
 
 (subtest "to-filter-expression"
   (let ((table (find-class 'thread)))

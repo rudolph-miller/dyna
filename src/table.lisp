@@ -24,9 +24,14 @@
   ((table-name :type (or cons string) :initarg :table-name)
    (dyna :type (or cons dyna) :initarg :dyna :accessor table-dyna)
    (throughput :type cons :initarg :throuput :accessor table-throughput)
-   (local-indexes :type (or null cons) :initarg :local-indexes :accessor table-local-indexes :initform nil)
-   (global-indexes :type (or null cons) :initarg :global-indexes :accessor table-global-indexes :initform nil)
+   (lsi :type (or null cons) :initarg :lsi :accessor table-lsi :initform nil)
+   (gsi :type (or null cons) :initarg :gsi :accessor table-gsi :initform nil)
    (%synced :type boolean :initform nil :accessor table-synced)))
+
+
+@export
+(defun find-the-key-type-key (class type)
+  (find type (class-direct-slots class) :key #'key-type :test #'equal))
 
 @export
 (defgeneric table-name (table)
@@ -54,15 +59,25 @@
     (when (getf initargs :dyna)
       (setf (getf initargs :dyna)
             (eval (car (getf initargs :dyna)))))
-    (loop for key in '(:table-name :throuput)
+    (loop for key in '(:table-name :throuput :gsi)
           do (set-car initargs key))
     (unless (contains-class-or-subclasses (find-class '<dyna-class>) (getf initargs :direct-superclasses))
       (setf (getf initargs :direct-superclasses)
             (cons (find-class '<dyna-class>) (getf initargs :direct-superclasses))))))
 
 (defun initialize-after-action (instance initargs)
-  (declare (ignore initargs))
-  (setf (slot-value instance '%synced) nil))
+  (let ((direct-slots (class-direct-slots instance)))
+    (flet ((find-the-name-key (name)
+             (find (symbol-name name)
+                   direct-slots
+                   :key #'(lambda (slot)
+                            (symbol-name (slot-definition-name slot)))
+                   :test #'equal)))
+      (when (getf initargs :lsi)
+        (setf (table-lsi instance)
+              (mapcar #'(lambda (index) (find-the-name-key index))
+                      (getf initargs :lsi))))
+      (setf (slot-value instance '%synced) nil))))
 
 (defmethod initialize-instance :around ((instance <dyna-table-class>) &rest initargs)
   (initialize-around-action instance initargs)
@@ -101,29 +116,10 @@
     (find-the-key-type-key class "RANGE")))
 
 @export
-(defgeneric table-local-index-slots (class)
-  (:method ((class symbol))
-    (table-local-index-slots (find-class class)))
-
-  (:method ((class <dyna-table-class>))
-    (mapcar #'(lambda (name) (find-the-name-key class name))
-            (table-local-indexes class))))
-
-@export
 (defgeneric table-range-keys (class)
   (:method ((class symbol))
     (table-range-keys (find-class class)))
 
   (:method ((class <dyna-table-class>))
     (cons (table-range-key class)
-          (table-local-index-slots class))))
-
-(defun find-the-key-type-key (class type)
-  (find type (class-direct-slots class) :key #'key-type :test #'equal))
-
-(defun find-the-name-key (class name)
-  (find (symbol-name name)
-        (class-direct-slots class)
-        :key #'(lambda (slot)
-                 (symbol-name (slot-definition-name slot)))
-        :test #'equal))
+          (table-lsi class))))
