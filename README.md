@@ -79,11 +79,16 @@ Most API return multiple values, the formaer is formatted result, and the latter
    (owner :attr-name "Owner"
           :attr-type :S
           :initarg :owner
-          :accessor thread-owner))
+          :accessor thread-owner)
+   (last-post-date-time :attr-name "LastPostDateTime"
+                        :attr-type :S
+                        :initarg :last-post-date-time
+                        :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
   (:throughput (:read 5 :wirte 5)
-  (:lsi owner)
+  (:lsi lat-post-date-time)
+  (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
 ;; Simpler Style
@@ -106,6 +111,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - `:table-name` can take table name of DynamoDB's table.(Optional.)
   - `:throughput` is the provisioned throuput of the table.
   - `:lsi` is columns of LocalSecondaryIndexes.
+  - `:gsi` is columns of GlobalSecondaryIndexes.
   - `:key-type` in slot should be `:hash` or `:range` and is the same as DynamoDB's table.
   - `:attr-name` in slot is AttributeName of Item in DynamoDB's table.(Optional.)
   - `:attr-type` in slot is AttributeType of Item in DynamoDB's table.(Optional without key attributes.)
