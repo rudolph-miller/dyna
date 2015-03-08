@@ -96,6 +96,16 @@
   (subtest "table-range-keys"
     (is (mapcar #'attr-name (table-range-keys table))
         '("Subject" "LastPostDateTime")
-        "can return range-keyes of the table.")))
+        "can return range-keyes of the table."))
+
+  (subtest "table-lsi"
+    (is-type (car (table-lsi table))
+             '<dyna-table-column>
+             "can return the list of #<<dyna-table-column>>."))
+
+  (subtest "table-gsi"
+    (is-type (getf (car (table-gsi table)) :hash)
+             '<dyna-table-column>
+             "can return the list of plist having #<<dyna-table-column>> as value.")))
 
 (finalize)
