@@ -31,6 +31,10 @@
             :attr-type :S
             :initarg :subject
             :accessor thread-subject)
+   (owner :attr-name "Owner"
+          :attr-type :S
+          :initarg :owner
+          :accessor thread-owner)
    (last-post-date-time :attr-name "LastPostDateTime"
                         :attr-type :S
                         :initarg :last-post-date-time
@@ -39,6 +43,7 @@
   (:table-name "Thread")
   (:throuput (:read 4 :write 5))
   (:lsi last-post-date-time)
+  (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
 (defclass inexist-table ()
@@ -166,6 +171,37 @@
     (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
+  (is-error (ensure-table-synced (find-class 'thread))
+            '<dyna-incompatible-table-schema>
+            "can raise the error with the incompatible gsi.")
+
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S
+            :initarg :owner
+            :accessor thread-owner)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 5))
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 5))
+    (:metaclass <dyna-table-class>))
+
   (ok (ensure-table-synced (find-class 'thread))
       "can return T if the table schema is correct.")
 
@@ -184,6 +220,10 @@
             :attr-type :S
             :initarg :subject
             :accessor thread-subject)
+   (owner :attr-name "Owner"
+          :attr-type :S
+          :initarg :onwer
+          :accessor thread-owner)
    (last-post-date-time :attr-name "LastPostDateTime"
                         :attr-type :S
                         :initarg :last-post-date-time
@@ -192,6 +232,7 @@
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
   (:lsi last-post-date-time)
+  (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
 (subtest "migrate-dyna-table"
@@ -221,6 +262,10 @@
      (tags :attr-name "Tags"
            :initarg :tags
            :accessor thread-tags)
+     (owner :attr-name "Owner"
+            :attr-type :S
+            :initarg :onwer
+            :accessor thread-owner)
      (last-post-date-time :attr-name "LastPostDateTime"
                           :attr-type :S
                           :initarg :last-post-date-time
@@ -229,6 +274,7 @@
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
     (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 5))
     (:metaclass <dyna-table-class>))
 
   (ok (not (migrate-dyna-table 'thread))
@@ -245,6 +291,35 @@
               :attr-type :S
               :initarg :subject
               :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 3))
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 5))
+    (:metaclass <dyna-table-class>))
+
+  (ok (migrate-dyna-table 'thread)
+      "can update the table if the definitions are changed.")
+
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S)
      (last-post-date-time :attr-name "LastPostDateTime"
                           :attr-type :S
                           :initarg :last-post-date-time
@@ -256,7 +331,65 @@
     (:metaclass <dyna-table-class>))
 
   (ok (migrate-dyna-table 'thread)
-      "can update the table if the definitions are changed."))
+      "can update the table if gsi is removed.")
+
+  (sleep 1)
+
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 3))
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 5))
+    (:metaclass <dyna-table-class>))
+
+  (ok (migrate-dyna-table 'thread)
+      "can update the table if gsi is added.")
+
+  (sleep 1)
+
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throuput (:read 5 :write 3))
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 1))
+    (:metaclass <dyna-table-class>))
+
+  (ok (migrate-dyna-table 'thread)
+      "can update the table if gsi is changed at throughput."))
 
 (subtest "delete-dyna-table"
   (ok (table-exist-p 'thread)
@@ -299,7 +432,7 @@
     (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
-  (migrate-dyna-table 'thread)
+  (recreate-dyna-table 'thread)
 
   (flet ((thread-equal (a b)
            (and (equal (thread-forum-name a)
@@ -360,6 +493,7 @@
   (:table-name "Thread")
   (:throuput (:read 5 :write 5))
   (:lsi last-post-date-time owner)
+  (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
 
 (recreate-dyna-table 'thread)

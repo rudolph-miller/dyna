@@ -128,5 +128,5 @@
   (format nil "Local-~a-Index" attr-name))
 
 @export
-(defun gen-gsi-name (attr-name)
-  (format nil "Global-~a-Index" attr-name))
+(defun gen-gsi-name (attr-names)
+  (format nil "Global-~{~a~^-~}-Index" attr-names))
