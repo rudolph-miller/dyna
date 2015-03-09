@@ -39,6 +39,8 @@
   (:import-from :dyna.table-operation
                 :describe-dyna
                 :migrate-dyna-table
+                :recreate-dyna-table
+                :delete-dyna-table
                 :find-dyna
                 :select-dyna
                 :save-dyna)
@@ -81,6 +83,8 @@
            ;; Table Operation
            :describe-dyna
            :migrate-dyna-table
+           :recreate-dyna-table
+           :delete-dyna-table
            :find-dyna
            :select-dyna
            :save-dyna))

@@ -118,6 +118,17 @@
     (find-the-key-type-key class "HASH")))
 
 @export
+(defgeneric table-hash-keys (class)
+  (:method ((class symbol))
+    (table-hash-keys (find-class class)))
+
+  (:method ((class <dyna-table-class>))
+    (list* (table-hash-key class)
+           (mapcar #'(lambda (gsi)
+                       (getf gsi :hash))
+                   (table-gsi class)))))
+
+@export
 (defgeneric table-range-key (class)
   (:method ((class symbol))
     (table-range-key (find-class class)))
@@ -133,3 +144,9 @@
   (:method ((class <dyna-table-class>))
     (cons (table-range-key class)
           (table-lsi class))))
+
+@export
+(defun gsi-to-index-name (gsi)
+  (gen-gsi-name (append (list (attr-name (getf gsi :hash)))
+                        (when (getf gsi :range)
+                          (list (attr-name (getf gsi :range)))))))

@@ -88,6 +88,10 @@
         "ForumName"
         "can return hash-key of the table."))
 
+  (subtest "table-hash-keys"
+    (is (mapcar #'attr-name (table-hash-keys table))
+        '("ForumName" "Subject")))
+
   (subtest "table-range-key"
     (is (attr-name (table-range-key table))
         "Subject"
