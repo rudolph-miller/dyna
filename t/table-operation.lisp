@@ -555,7 +555,11 @@
   (is (mapcar #'thread-owner (select-dyna 'thread (where (:and (:= :forum-name "Amazon RDS")
                                                                (:= :owner "Rudolph")))))
       '("Rudolph")
-      "with a local-index.")
+      "with lsi.")
+
+  (is (mapcar #'thread-owner (select-dyna 'thread (where (:and (:= :owner "Rudolph")))))
+      '("Rudolph" "Rudolph" "Rudolph")
+      "with gsi.")
 
   (is (mapcar #'thread-tags (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                               (:list= :tags '("AWS" "HelpMe"))))))
