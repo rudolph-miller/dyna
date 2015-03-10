@@ -68,7 +68,7 @@
           (when return-consumed-capacity
             (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
-(defcontent batch-write-item (&key request-items return-consumed-capacity)
+(defcontent batch-write-item (&key request-items return-consumed-capacity return-item-collection-metrics)
     (request-items)
   (append (list `("RequestItems" . ,(add-obj-to-list
                                      (mapcar #'(lambda (table)
@@ -82,7 +82,9 @@
                                                                (cdr table))))
                                              request-items))))
           (when return-consumed-capacity
-            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))
+          (when return-item-collection-metrics
+            (list `("ReturnItemCollectionMetrics" . , return-item-collection-metrics)))))
 
 (defcontent create-table (&key table-name attribute-definitions key-schema global-secondary-indexes
                                local-secondary-indexes provisioned-throughput)
@@ -97,14 +99,23 @@
             (list `("GlobalSecondaryIndexes" . ,(build-secondary-index-obj global-secondary-indexes))))))
 
 
-(defcontent delete-item (&key table-name key condition-expression return-values)
+(defcontent delete-item (&key table-name key condition-expression return-values expression-attribute-names
+                              expression-attribute-values return-consumed-capacity return-item-collection-metrics)
     (table-name key)
   (append (list  `("TableName" . ,table-name)
                  `("Key" . ,(add-obj-to-list (build-desc-list key))))
           (when return-values
             (list `("ReturnValues" . ,return-values)))
           (when condition-expression
-            (list `("ConditionExpression" . ,condition-expression)))))
+            (list `("ConditionExpression" . ,condition-expression)))
+          (when expression-attribute-names
+            (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
+          (when expression-attribute-values
+            (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))
+          (when return-item-collection-metrics
+            (list `("ReturnItemCollectionMetrics" . ,return-item-collection-metrics)))))
 
 (defcontent delete-table (&key table-name)
     (table-name)
@@ -127,16 +138,30 @@
           (when return-consumed-capacity
             (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
 
-(defcontent list-tables () nil)
+(defcontent list-tables (&key exclusive-start-table-name limit)
+    nil
+  (append (when exclusive-start-table-name
+            (list `("ExclusiveStartTableName" . ,exclusive-start-table-name)))
+          (when limit
+            (list `("Limit" . ,limit)))))
 
-(defcontent put-item (&key table-name item condition-expression expression-attribute-values)
+(defcontent put-item (&key table-name item condition-expression expression-attribute-values expression-attribute-names
+                           return-consumed-capacity return-item-collection-metrics return-values)
     (table-name item)
   (append (list  `("TableName" . ,table-name)
                  `("Item" . ,(add-obj-to-list (build-desc-list item))))
           (when condition-expression
             (list `("ConditionExpression" . ,condition-expression)))
           (when expression-attribute-values
-            (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))))
+            (list `("ExpressionAttributeValues" . ,(add-obj-to-list (build-desc-list expression-attribute-values)))))
+          (when expression-attribute-names
+            (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
+          (when return-consumed-capacity
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))
+          (when return-item-collection-metrics
+            (list `("ReturnItemCollectionMetrics" . ,return-item-collection-metrics)))
+          (when return-values
+            (list `("ReturnValues" . ,return-values)))))
 
 (defcontent query (&key table-name key-conditions return-consumed-capacity attributes-to-get index-name select
                         limit consistent-read conditional-operator exclusive-start-key expression-attribute-values
@@ -245,8 +270,8 @@
           (when total-segments
             (list `("TotalSegments" . ,total-segments)))))
 
-(defcontent update-item (&key table-name key update-expression condition-expression return-values
-                              expression-attribute-values expression-attribute-names return-consumed-capacity)
+(defcontent update-item (&key table-name key update-expression condition-expression return-values expression-attribute-values
+                              expression-attribute-names return-consumed-capacity return-item-collection-metrics)
     (table-name key)
   (append (list `("TableName" . ,table-name)
                 `("Key" . ,(add-obj-to-list (build-desc-list key))))
@@ -261,7 +286,9 @@
           (when expression-attribute-names
             (list `("ExpressionAttributeNames" . ,(add-obj-to-list expression-attribute-names))))
           (when return-consumed-capacity
-            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))))
+            (list `("ReturnConsumedCapacity" . ,return-consumed-capacity)))
+          (when return-item-collection-metrics
+            (list `("ReturnItemCollectionMetrics" . ,return-item-collection-metrics)))))
 
 (defcontent update-table (&key table-name attribute-definitions provisioned-throughput global-secondary-index-updates)
     (table-name)

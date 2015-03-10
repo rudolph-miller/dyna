@@ -34,15 +34,18 @@
     (is-error (batch-write-item-content dyna :return-consumed-capacity "TOTAL")
               '<dyna-incomplete-argumet-error>
               "can raise the error without :request-items.")
-    (is (batch-write-item-content dyna :request-items '(("Forum" . ((("PutRequest" . (("Item" . (("Name" . "Amazon DynamoDB")
-                                                                                                 ("Category" . "Amazon Web Services"))))))
-                                                                    (("PutRequest" . (("Item" . (("Name" . "Amazon RDS")
-                                                                                                 ("Category" . "Amazon Web Services"))))))))
-                                                        ("Thread" . ((("PutRequest" . (("Item" . (("ForumName" . "Amazon DynamoDB")
-                                                                                                  ("Subject" . "Concurrent reads")))))))))
-                                       :return-consumed-capacity "TOTAL")
+    (is (batch-write-item-content
+         dyna :request-items '(("Forum" . ((("PutRequest" . (("Item" . (("Name" . "Amazon DynamoDB")
+                                                                        ("Category" . "Amazon Web Services"))))))
+                                           (("PutRequest" . (("Item" . (("Name" . "Amazon RDS")
+                                                                        ("Category" . "Amazon Web Services"))))))))
+                               ("Thread" . ((("PutRequest" . (("Item" . (("ForumName" . "Amazon DynamoDB")
+                                                                         ("Subject" . "Concurrent reads")))))))))
+              :return-consumed-capacity "TOTAL"
+              :return-item-collection-metrics "NONE")
         (build-json "\"RequestItems\":{\"Forum\":[{\"PutRequest\":{\"Item\":{\"Name\":{\"S\":\"Amazon DynamoDB\"},\"Category\":{\"S\":\"Amazon Web Services\"}}}},{\"PutRequest\":{\"Item\":{\"Name\":{\"S\":\"Amazon RDS\"},\"Category\":{\"S\":\"Amazon Web Services\"}}}}],\"Thread\":[{\"PutRequest\":{\"Item\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"},\"Subject\":{\"S\":\"Concurrent reads\"}}}}]}"
-                    "\"ReturnConsumedCapacity\":\"TOTAL\"")
+                    "\"ReturnConsumedCapacity\":\"TOTAL\""
+                    "\"ReturnItemCollectionMetrics\":\"NONE\"")
         "can return the correct JSON object."))
 
   (subtest "create-table"
@@ -132,12 +135,20 @@
               "can raise the error without :key.")
     (is (delete-item-content dyna :table-name "Thread"
                                   :key '(("ForumName" . "Amazon DynamoDB"))
-                                  :condition-expression "attribute_not_exists(Replies)"
-                                  :return-values "ALL_OLD")
+                                  :condition-expression "#r > :num"
+                                  :return-values "ALL_OLD"
+                                  :expression-attribute-names '(("#r" . "Replies"))
+                                  :expression-attribute-values '((":num" . 10))
+                                  :return-consumed-capacity "ALL"
+                                  :return-item-collection-metrics "NONE")
         (build-json "\"TableName\":\"Thread\""
                     "\"Key\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
                     "\"ReturnValues\":\"ALL_OLD\""
-                    "\"ConditionExpression\":\"attribute_not_exists(Replies)\"")
+                    "\"ConditionExpression\":\"#r > :num\""
+                    "\"ExpressionAttributeNames\":{\"#r\":\"Replies\"}"
+                    "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"10\"}}"
+                    "\"ReturnConsumedCapacity\":\"ALL\""
+                    "\"ReturnItemCollectionMetrics\":\"NONE\"")
         "can return the correct JSON object."))
 
 
@@ -181,6 +192,10 @@
   (subtest "list-tables"
     (is (list-tables-content dyna)
         "{}"
+        "can return the correct JSON object with no keywords.")
+    (is (list-tables-content dyna :exclusive-start-table-name "Thread" :limit 1)
+        (build-json "\"ExclusiveStartTableName\":\"Thread\""
+                    "\"Limit\":1")
         "can return the correct JSON object."))
 
   (subtest "put-item"
@@ -193,13 +208,21 @@
     (is (put-item-content dyna :table-name "Thread"
                                :item '(("Tags" . ("Multiple Items" "HelpMe"))
                                        ("ForumName" . "Amazon DynamoDB"))
-                               :condition-expression "ForumName <> :f and Subject <> :s"
+                               :condition-expression "#f <> :f and Subject <> :s"
                                :expression-attribute-values '((":f" . "Amazon DynamoDB")
-                                                              (":s" . "Update multiple items")))
+                                                              (":s" . "Update multiple items"))
+                               :expression-attribute-names '(("#f" . "ForumName"))
+                               :return-consumed-capacity "ALL"
+                               :return-item-collection-metrics "NONE"
+                               :return-values "ALL")
         (build-json "\"TableName\":\"Thread\""
                     "\"Item\":{\"Tags\":{\"SS\":[\"Multiple Items\",\"HelpMe\"]},\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
-                    "\"ConditionExpression\":\"ForumName <> :f and Subject <> :s\""
-                    "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"Update multiple items\"}}")
+                    "\"ConditionExpression\":\"#f <> :f and Subject <> :s\""
+                    "\"ExpressionAttributeValues\":{\":f\":{\"S\":\"Amazon DynamoDB\"},\":s\":{\"S\":\"Update multiple items\"}}"'
+                    "\"ExpressionAttributeNames\":{\"#f\":\"ForumName\"}"
+                    "\"ReturnConsumedCapacity\":\"ALL\""
+                    "\"ReturnItemCollectionMetrics\":\"NONE\""
+                    "\"ReturnValues\":\"ALL\"")
         "can return the correct JSON object."))
 
   (subtest "query"
@@ -352,12 +375,14 @@
                                   :key '(("ForumName" . "Amazon DynamoDB"))
                                   :update-expression "set Replies = Replies + :num"
                                   :expression-attribute-values '((":num" . 1))
-                                  :return-values "NONE")
+                                  :return-values "NONE"
+                                  :return-item-collection-metrics "NONE")
         (build-json "\"TableName\":\"Thread\""
                     "\"Key\":{\"ForumName\":{\"S\":\"Amazon DynamoDB\"}}"
                     "\"UpdateExpression\":\"set Replies = Replies + :num\""
                     "\"ReturnValues\":\"NONE\""
-                    "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}")
+                    "\"ExpressionAttributeValues\":{\":num\":{\"N\":\"1\"}}"
+                    "\"ReturnItemCollectionMetrics\":\"NONE\"")
         "can return the correct JSON object."))
 
   (subtest "update-table"
@@ -376,13 +401,13 @@
                               :provisioned-throughput '(("ReadCapacityUnits" . 5)
                                                         ("WriteCapacityUnits" . 5))
                               :global-secondary-index-updates '((("Create" . (("IndexName" . "Global-Subject-LastPostDateTime-Index")
-                                                                       ("KeySchema" . ((("AttributeName" . "Subject")
-                                                                                        ("KeyType" . "HASH"))
-                                                                                       (("AttributeName" . "LastPostDateTime")
-                                                                                        ("KeyType" . "RANGE"))))
-                                                                       ("Projection" .(("ProjectionType" . "ALL")))
-                                                                       ("ProvisionedThroughput" . (("ReadCapacityUnits" . 5)
-                                                                                                   ("WriteCapacityUnits" . 5))))))))
+                                                                              ("KeySchema" . ((("AttributeName" . "Subject")
+                                                                                               ("KeyType" . "HASH"))
+                                                                                              (("AttributeName" . "LastPostDateTime")
+                                                                                               ("KeyType" . "RANGE"))))
+                                                                              ("Projection" .(("ProjectionType" . "ALL")))
+                                                                              ("ProvisionedThroughput" . (("ReadCapacityUnits" . 5)
+                                                                                                          ("WriteCapacityUnits" . 5))))))))
         (build-json
          "\"TableName\":\"Thread\""
          "\"AttributeDefinitions\":[{\"AttributeName\":\"ForumName\",\"AttributeType\":\"S\"},{\"AttributeName\":\"Subject\",\"AttributeType\":\"S\"},{\"AttributeName\":\"LastPostDateTime\",\"AttributeType\":\"S\"}]"

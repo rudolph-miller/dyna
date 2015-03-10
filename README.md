@@ -237,6 +237,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - Support
     - `:request-items`
     - `:return-consumed-capacity`
+    - `:return-item-collection-metrics`
 
 ### create-table
 ```Lisp
@@ -279,6 +280,10 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:key`
     - `:condition-expression`
     - `:return-values`
+    - `:expression-attribute-names`
+    - `:expression-attribute-values`
+    - `:return-consumed-capacity`
+    - `:return-item-collection-metrics`
 
 ### delete-table
 ```Lisp
@@ -286,7 +291,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ;; => T
 ```
   - returns t if the operation succeeded.
-  - SUpport
+  - Support
     - `:table-name`
 
 ### describe-table
@@ -313,9 +318,6 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:consistent-read`
     - `:return-consumed-capacity`
     - `:expression-attribute-names`
-  - Unsupport
-    - `:returnItem-collection-metrics`
-    - `:return-values`
 
 ### list-tables
 ```Lisp
@@ -323,6 +325,9 @@ Most API return multiple values, the formaer is formatted result, and the latter
 ;; => ("Thread")
 ```
   - returns the list of table names.
+  - Support
+    - `:exclusive-start-table-name`
+    - `:limit`
 
 ### put-item
 ```Lisp
@@ -340,12 +345,10 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:item`
     - `:on-expression`
     - `:expression-attribute-values`
-  - Unsupport
     - `:expression-attribute-names`
     - `:return-consumed-capacity`
     - `:return-item-collection-metrics`
     - `:return-values`
-
 
 ### query
 ```Lisp
@@ -427,7 +430,6 @@ Most API return multiple values, the formaer is formatted result, and the latter
     - `:expression-attribute-values`
     - `:return-values`
     - `:return-consumed-capacity`
-  - Unsupport
     - `:return-item-collection-metrics`
 
 ### update-table
