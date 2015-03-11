@@ -50,7 +50,6 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
 ```
 
 ## API
-Most API return multiple values, the formaer is formatted result, and the latter is raw result.
 
 ### dyna
 ```Lisp
@@ -196,6 +195,7 @@ Most API return multiple values, the formaer is formatted result, and the latter
   - can return T if the object is successfully saved.
 
 ## Low Level API
+Most Low Level API return multiple values, the formaer is formatted result, and the latter is raw result.
 
 ### fetch
 ```Lisp
