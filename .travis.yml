@@ -21,6 +21,7 @@ install:
 before_script:
   # Start dynamodb-local
   - java -Djava.library.path=/tmp/dynamodb/DynamoDBLocal_lib -jar /tmp/dynamodb/DynamoDBLocal.jar -inMemory &
+  - git clone https://github.com/fukamachi/cl-cookie ~/lisp/cl-cookie
   - git clone https://github.com/fukamachi/dexador ~/lisp/dexador
 
 script:
