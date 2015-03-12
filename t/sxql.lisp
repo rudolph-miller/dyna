@@ -63,6 +63,18 @@
                         table)
         "T with nested :and.")
 
+    (ok (not (queryable-op-p (where (:in :forum-name '("Amazon RDS" "Amazon DynamoDB"))) table))
+        "NIL with :in")
+    
+    (ok (not (queryable-op-p (where (:between :forum-name '("Amazon RDS" "Amazon DynamoDB"))) table))
+        "NIL with :between")
+    
+    (ok (not (queryable-op-p (where (:is-null :forum-name)) table))
+        "NIL with :is-null")
+    
+    (ok (not (queryable-op-p (where (:not-null :forum-name)) table))
+        "NIL with :not-null")
+    
     (ok (not (queryable-op-p (where (:or (:= :forum-name "Amazon DynamoDB")
                                          (:= :subject "Really useful")))
                              table))
@@ -204,6 +216,18 @@
                  (("#filter0" . "Tags"))
                  ((":filter0" . "a") (":filter1" . "z")))
                "with :between.")
+
+    (is-values (to-filter-expression (where (:is-null :tags)) table)
+               '("attribute_not_exists( #filter0 )"
+                 (("#filter0" . "Tags"))
+                 nil)
+               "with :is-null.")
+
+    (is-values (to-filter-expression (where (:not-null :tags)) table)
+               '("attribute_exists( #filter0 )"
+                 (("#filter0" . "Tags"))
+                 nil)
+               "with :not-null.")
 
     (is-values (to-filter-expression (where (:and (:= :forum-name "Amazon DynamoDB")
                                                   (:= :subject "Really useful")))

@@ -540,6 +540,14 @@
       '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
       "with where-clause with :between.")
 
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:is-null :subject))))
+      nil
+      "with where-clause with :is-null.")
+
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:not-null :subject))))
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "with where-clause with :not-null.")
+
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                                     (:= :subject "Really useful")))))
       '("Amazon DynamoDB")

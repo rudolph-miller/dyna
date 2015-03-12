@@ -10,6 +10,8 @@
                 :conjunctive-op-name
                 :conjunctive-op-expressions
                 :make-conjunctive-op
+                :unary-op
+                :unary-op-var
                 :infix-op
                 :infix-list-op
                 :conjunctive-op
@@ -29,12 +31,15 @@
                 :where-clause-expression
                 :make-where-clause)
   (:import-from :sxql.operator
-                :define-op)
+                :define-op
+                :is-null-op
+                :not-null-op)
   (:import-from :alexandria
                 :ensure-list
                 :make-keyword
                 :length=
-                :flatten)
+                :flatten
+                :symbolicate)
   (:import-from :c2mop
                 :class-direct-slots
                 :slot-definition-name))
@@ -42,13 +47,14 @@
 
 (syntax:use-syntax :annot)
 
-(define-op (:list= infix-list-op))
-(import 'list=-op (find-package 'sxql.operator))
-(import 'make-list=-op (find-package 'sxql.operator))
+(defmacro defin-sxql-op (sym type)
+  `(progn
+     (define-op (,sym ,type))
+     (import (symbolicate ,sym '-op) (find-package 'sxql.operator))
+     (import (symbolicate 'make- ,sym '-op) (find-package 'sxql.operator))))
 
-(define-op (:between infix-list-op))
-(import 'between-op (find-package 'sxql.operator))
-(import 'make-between-op (find-package 'sxql.operator))
+(defin-sxql-op :list= infix-list-op)
+(defin-sxql-op :between infix-list-op)
 
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
@@ -93,14 +99,16 @@
     (let ((expressions (conjunctive-op-expressions op)))
       (and (and-op-p op)
            (some #'(lambda (op)
-                      (queryable-op-p op table))
-                  expressions))))
+                     (queryable-op-p op table))
+                 expressions))))
 
   (:method ((op infix-op) table)
     (let ((op-key-name (car (op-keys op table))))
       (some #'(lambda (slot)
                 (equal (attr-name slot) op-key-name))
             (table-hash-keys table))))
+
+  (:method ((op unary-op) table) nil)
 
   (:method ((op infix-list-op) table) nil))
 
@@ -118,6 +126,9 @@
   (:method ((op infix-op) table)
     (list (yield (infix-op-left op) table)))
 
+  (:method ((op unary-op) table)
+    (list (yield (unary-op-var op) table)))
+
   (:method ((op infix-list-op) table)
     (list (yield (infix-list-op-left op) table))))
 
@@ -132,6 +143,10 @@
   (:method ((op list=-op) table)
     (list (mapcar #'(lambda (item) (yield item table))
                   (infix-list-op-right op))))
+
+  (:method ((op unary-op) table)
+    (declare (ignore table))
+    nil)
 
   (:method ((op infix-list-op) table)
     (mapcar #'(lambda (item) (yield item table))
@@ -161,6 +176,10 @@
                                    (format nil "~a" (sub (car (conjunctive-op-expressions exp))))
                                    (format nil (format nil "(~~{~~a~~^ ~a ~~})" (conjunctive-op-name exp))
                                            (mapcar #'sub (conjunctive-op-expressions exp)))))
+               (not-null-op (format nil "attribute_exists( ~a )"
+                                   (find-attr-name (car (op-keys exp table)))))
+               (is-null-op (format nil "attribute_not_exists( ~a )"
+                                   (find-attr-name (car (op-keys exp table)))))
                (infix-op (format nil "~a ~a ~a"
                                  (find-attr-name (car (op-keys exp table)))
                                  (infix-op-name exp)
@@ -168,7 +187,7 @@
                (between-op (format nil "~a BETWEEN ~a"
                                    (find-attr-name (car (op-keys exp table)))
                                    (apply #'format nil "~a AND ~a"
-                                           (mapcar #'find-attr-value (op-values exp table)))))
+                                          (mapcar #'find-attr-value (op-values exp table)))))
                (list=-op (format nil "~a = ~a"
                                  (find-attr-name (car (op-keys exp table)))
                                  (find-attr-value (car (op-values exp table)))))
