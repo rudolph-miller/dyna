@@ -75,6 +75,9 @@
     (ok (not (queryable-op-p (where (:not-null :forum-name)) table))
         "NIL with :not-null")
     
+    (ok (not (queryable-op-p (where (:begins-with :forum-name "Amazon")) table))
+        "NIL with :begins-with")
+    
     (ok (not (queryable-op-p (where (:or (:= :forum-name "Amazon DynamoDB")
                                          (:= :subject "Really useful")))
                              table))
@@ -112,20 +115,6 @@
                "with :and.")
 
     (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
-                                               (:between :subject '("a" "z"))))
-                                  table)
-               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
-                  ("Subject" . (("AttributeValueList" . ("a" "z")) ("ComparisonOperator" . "BETWEEN"))))
-                 nil)
-               "with :between.")
-
-    (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS"))
-                                  table)
-               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
-                 nil)
-               "with slot-name.")
-
-    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
                                                (:in :subject '("AWS" "Really scalable"))))
                                   table)
                '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
@@ -133,7 +122,37 @@
                  "#filter0 IN (:filter0,:filter1)"
                  (("#filter0" . "Subject"))
                  ((":filter0" . "AWS") (":filter1" . "Really scalable")))
-               "with op related to no primary keys.")
+               "with not queryable op.")
+
+    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                               (:list= :tags '("Easy" "Scalable"))))
+                                  table)
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                  ("Tags" . (("AttributeValueList" . ("Easy" "Scalable")) ("ComparisonOperator" . "EQ"))))
+                 "Local-Tags-Index")
+               "with :list=.")
+
+    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                               (:between :subject '("a" "z"))))
+                                  table)
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                  ("Subject" . (("AttributeValueList" . ("a" "z")) ("ComparisonOperator" . "BETWEEN"))))
+                 nil)
+               "with :between.")
+
+    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                               (:begins-with :subject "AWS")))
+                                  table)
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                  ("Subject" . (("AttributeValueList" . ("AWS")) ("ComparisonOperator" . "BEGINS_WITH"))))
+                 nil)
+               "with :begins-with.")
+
+    (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS"))
+                                  table)
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+                 nil)
+               "with slot-name.")
 
     (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
                                                (:= :subject "AWS")
@@ -228,6 +247,12 @@
                  (("#filter0" . "Tags"))
                  nil)
                "with :not-null.")
+
+    (is-values (to-filter-expression (where (:begins-with :forum-name "Amazon")) table)
+               '("begins_with(#filter0, :filter0)"
+                 (("#filter0" . "ForumName"))
+                 ((":filter0" . "Amazon")))
+               "with :begins-with.")
 
     (is-values (to-filter-expression (where (:and (:= :forum-name "Amazon DynamoDB")
                                                   (:= :subject "Really useful")))

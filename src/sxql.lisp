@@ -32,6 +32,7 @@
                 :make-where-clause)
   (:import-from :sxql.operator
                 :define-op
+                :=-op
                 :is-null-op
                 :not-null-op)
   (:import-from :alexandria
@@ -55,6 +56,7 @@
 
 (defin-sxql-op :list= infix-list-op)
 (defin-sxql-op :between infix-list-op)
+(defin-sxql-op :begins-with infix-op)
 
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
@@ -64,9 +66,10 @@
       (:>= "GE")
       (:< "LT")
       (:<= "LE")
-      (:in "IN")
+      (:list= "EQ")
       (:between "BETWEEN")
-      (t (error '<dyna-unsupported-op-erorr> :op op)))))
+      (:|BEGINS WITH| "BEGINS_WITH")
+      (t nil))))
 
 @export
 (defgeneric yield (obj table)
@@ -102,15 +105,11 @@
                      (queryable-op-p op table))
                  expressions))))
 
-  (:method ((op infix-op) table)
-    (let ((op-key-name (car (op-keys op table))))
-      (some #'(lambda (slot)
-                (equal (attr-name slot) op-key-name))
-            (table-hash-keys table))))
+  (:method ((op =-op) table)
+    t)
 
-  (:method ((op unary-op) table) nil)
-
-  (:method ((op infix-list-op) table) nil))
+  (:method ((op t) table)
+    nil))
 
 (defun conjunctive-op-p (op)
   (typep op 'conjunctive-op))
@@ -180,6 +179,9 @@
                                    (find-attr-name (car (op-keys exp table)))))
                (is-null-op (format nil "attribute_not_exists( ~a )"
                                    (find-attr-name (car (op-keys exp table)))))
+               (begins-with-op (format nil "begins_with(~a, ~a)"
+                                       (find-attr-name (car (op-keys exp table)))
+                                       (find-attr-value (car (op-values exp table)))))
                (infix-op (format nil "~a ~a ~a"
                                  (find-attr-name (car (op-keys exp table)))
                                  (infix-op-name exp)
@@ -239,9 +241,9 @@
           (rest))
       (values (mapcan #'(lambda (item)
                           (let ((attr-name (car (op-keys item table))))
-                            (if (or (typep item 'infix-op)
-                                    (typep item 'between-op))
-                                (if (equal attr-name hash-key)
+                            (if (op-comparison-name item)
+                                (if (and (equal attr-name hash-key)
+                                         (typep item '=-op))
                                     (progn (setf used-index t)
                                            (to-key-conditions item table))
                                     (let ((index (and (not used-index)
