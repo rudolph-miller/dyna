@@ -536,6 +536,10 @@
       '(("Scalable"))
       "with where-clause with :list=.")
 
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:between :forum-name '("Amazon DynamoDB" "Amazon RDS")))))
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "with where-clause with :between.")
+
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                                     (:= :subject "Really useful")))))
       '("Amazon DynamoDB")

@@ -46,6 +46,10 @@
 (import 'list=-op (find-package 'sxql.operator))
 (import 'make-list=-op (find-package 'sxql.operator))
 
+(define-op (:between infix-list-op))
+(import 'between-op (find-package 'sxql.operator))
+(import 'make-between-op (find-package 'sxql.operator))
+
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
     (case op-name
@@ -55,6 +59,7 @@
       (:< "LT")
       (:<= "LE")
       (:in "IN")
+      (:between "BETWEEN")
       (t (error '<dyna-unsupported-op-erorr> :op op)))))
 
 @export
@@ -160,9 +165,12 @@
                                  (find-attr-name (car (op-keys exp table)))
                                  (infix-op-name exp)
                                  (find-attr-value (car (op-values exp table)))))
-               (list=-op (format nil "~a ~a ~a"
+               (between-op (format nil "~a BETWEEN ~a"
+                                   (find-attr-name (car (op-keys exp table)))
+                                   (apply #'format nil "~a AND ~a"
+                                           (mapcar #'find-attr-value (op-values exp table)))))
+               (list=-op (format nil "~a = ~a"
                                  (find-attr-name (car (op-keys exp table)))
-                                 "="
                                  (find-attr-value (car (op-values exp table)))))
                (infix-list-op (format nil "~a ~a ~a"
                                       (find-attr-name (car (op-keys exp table)))
@@ -212,7 +220,8 @@
           (rest))
       (values (mapcan #'(lambda (item)
                           (let ((attr-name (car (op-keys item table))))
-                            (if (typep item 'infix-op)
+                            (if (or (typep item 'infix-op)
+                                    (typep item 'between-op))
                                 (if (equal attr-name hash-key)
                                     (progn (setf used-index t)
                                            (to-key-conditions item table))

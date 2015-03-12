@@ -99,15 +99,13 @@
                  nil)
                "with :and.")
 
-    (is-values (to-key-conditions (where (:and (:= "ForumName" "Amazon RDS")
-                                               (:list= "Tags" '("Scalable" "Easy"))))
+    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                               (:between :subject '("a" "z"))))
                                   table)
-               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
-                 nil
-                 "#filter0 = :filter0"
-                 (("#filter0" . "Tags"))
-                 ((":filter0" . ("Scalable" "Easy"))))
-               "with :list=.")
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
+                  ("Subject" . (("AttributeValueList" . ("a" "z")) ("ComparisonOperator" . "BETWEEN"))))
+                 nil)
+               "with :between.")
 
     (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS"))
                                   table)
@@ -200,6 +198,12 @@
                  (("#filter0" . "Tags"))
                  ((":filter0" . ("AWS" "HelpMe"))))
                "with :list=.")
+
+    (is-values (to-filter-expression (where (:between :tags '("a" "z"))) table)
+               '("#filter0 BETWEEN :filter0 AND :filter1"
+                 (("#filter0" . "Tags"))
+                 ((":filter0" . "a") (":filter1" . "z")))
+               "with :between.")
 
     (is-values (to-filter-expression (where (:and (:= :forum-name "Amazon DynamoDB")
                                                   (:= :subject "Really useful")))
