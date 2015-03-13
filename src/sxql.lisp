@@ -55,6 +55,7 @@
      (import (symbolicate 'make- ,sym '-op) (find-package 'sxql.operator))))
 
 (defin-sxql-op :list= infix-list-op)
+(defin-sxql-op :list-in infix-list-op)
 (defin-sxql-op :between infix-list-op)
 (defin-sxql-op :begins-with infix-op)
 (defin-sxql-op :contains infix-op)
@@ -144,6 +145,13 @@
     (list (mapcar #'(lambda (item) (yield item table))
                   (infix-list-op-right op))))
 
+  (:method ((op list-in-op) table)
+    (mapcar #'(lambda (lst)
+                (mapcar #'(lambda (item)
+                            (yield item table))
+                        lst))
+            (infix-list-op-right op)))
+
   (:method ((op unary-op) table)
     (declare (ignore table))
     nil)
@@ -176,8 +184,11 @@
                                    (format nil "~a" (sub (car (conjunctive-op-expressions exp))))
                                    (format nil (format nil "(~~{~~a~~^ ~a ~~})" (conjunctive-op-name exp))
                                            (mapcar #'sub (conjunctive-op-expressions exp)))))
+               (list-in-op (format nil "~a IN ~a"
+                                   (find-attr-name (car (op-keys exp table)))
+                                   (format nil "(~{~a~^,~})" (mapcar #'find-attr-value (op-values exp table)))))
                (not-null-op (format nil "attribute_exists( ~a )"
-                                   (find-attr-name (car (op-keys exp table)))))
+                                    (find-attr-name (car (op-keys exp table)))))
                (is-null-op (format nil "attribute_not_exists( ~a )"
                                    (find-attr-name (car (op-keys exp table)))))
                (begins-with-op (format nil "begins_with(~a, ~a)"

@@ -136,6 +136,16 @@
                "with :list=.")
 
     (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                               (:list-in :tags '(("AWS") ("Easy" "Scalable")))))
+                                  table)
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+                 nil
+                 "#filter0 IN (:filter0,:filter1)"
+                 (("#filter0" . "Tags"))
+                 ((":filter0" . ("AWS")) (":filter1" . ("Easy" "Scalable"))))
+               "with :list-in.")
+
+    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
                                                (:between :subject '("a" "z"))))
                                   table)
                '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ")))
@@ -242,6 +252,12 @@
                  (("#filter0" . "Tags"))
                  ((":filter0" . ("AWS" "HelpMe"))))
                "with :list=.")
+
+    (is-values (to-filter-expression (where (:list-in :tags '(("AWS") ("Easy" "Scalable")))) table)
+               '("#filter0 IN (:filter0,:filter1)"
+                 (("#filter0" . "Tags"))
+                 ((":filter0" . ("AWS")) (":filter1" . ("Easy" "Scalable"))))
+               "with :list-in.")
 
     (is-values (to-filter-expression (where (:between :tags '("a" "z"))) table)
                '("#filter0 BETWEEN :filter0 AND :filter1"
