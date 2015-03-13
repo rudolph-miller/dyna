@@ -183,7 +183,7 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
 ;; => (#<THREAD >)
 ```
   - returns the list of objects.
-  - can handle where-clause of SxQL.
+  - can handle [Extended Where Clause](#extended-where-clause) of SxQL.
   - can handle `LastEvaluatedKey` in the response.
   - `:limit` can restrict the number of results.
 
@@ -459,6 +459,20 @@ Most Low Level API return multiple values, the formaer is formatted result, and 
     - `:attribute-definitions`
     - `:provisioned-throughput`
     - `:global-secondary-index-updates`
+
+## Extended Where Clause
+  - You can use ordinary operators.
+  - Extended operators are below. (`:between`, `:begins-with`, `:contains`, `:list=`, `:list-in`)
+
+```Lisp
+(where (:between :forum-name '("A" "Z")))
+(where (:begins-with :forum-name "Amazon"))
+(where (:contains :forum-name "RDS"))
+
+;; If Attribute Type of "Tags" is "SS", you query := and :in with :list= and :list-in respectively.
+(where (:list= :tags '("AWS" "Easy")))
+(where (:list-in :tags '(("AWS" "Easy") ("Scalable"))))
+```
 
 ## See Also
 
