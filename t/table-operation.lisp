@@ -524,6 +524,10 @@
       '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
       "without args.")
 
+  (is (mapcar #'thread-forum-name (select-dyna 'thread :segments 4))
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "with :segments.")
+
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB"))))
       '("Amazon DynamoDB" "Amazon DynamoDB")
       "with where-clause with :=.")
@@ -601,6 +605,10 @@
   (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :limit 1 :with-continue t))
       2
       "with :limit and :with-continue.")
+
+  (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB")) :segments 2 :limit 1 :with-continue t))
+      2
+      "with :segments, :limit and :with-continue.")
 
   (is (length (select-dyna 'thread (where (:= :forum-name "Amazon DynamoDB"))))
       2

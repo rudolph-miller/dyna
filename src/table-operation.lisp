@@ -25,6 +25,8 @@
 
 (syntax:use-syntax :annot)
 
+(defvar *retry-count-table* (make-hash-table :test #'equal))
+
 @export
 (defgeneric table-exist-p (table)
   (:method ((table symbol))
@@ -353,26 +355,40 @@
            (with-continue (getf args :with-continue))
            (without-continue (getf args :without-continue))
            (use-query (getf args :use-query))
-           (queryable (and where-clause (queryable-op-p where-clause table))))
-      (multiple-value-bind (result raw-result)
-          (if (or use-query queryable)
-              (query-dyna table where-clause :start-key start-key :limit limit)
-              (scan-dyna table where-clause :start-key start-key :limit limit))
-        (let ((last-evaluated-key (safety-val raw-result "LastEvaluatedKey")))
-          (if (and (not without-continue) (or (not limit) with-continue) last-evaluated-key)
-              (apply #'select-dyna table
-                     (append (when where-clause (list where-clause))
-                             (list :last-result (append last-result result)
-                                   :start-key last-evaluated-key
-                                   :with-continue t
-                                   :limit limit
-                                   :use-query (or use-query queryable))))
-              (values (mapcar #'(lambda (item)
-                                  (build-dyna-table-obj table item))
-                              (append last-result result))
-                      raw-result)))))))
+           (queryable (or (getf args :queryable)
+                          (and where-clause (queryable-op-p where-clause table))))
+           (segment (getf args :segment))
+           (segments (getf args :segments)))
+      (flet ((get-result (&optional segment)
+               (multiple-value-bind (result raw-result)
+                   (if (or use-query queryable)
+                       (query-dyna table where-clause :start-key start-key :limit limit)
+                       (scan-dyna table where-clause :start-key start-key :limit limit :segment segment :segments segments))
+                 (let ((last-evaluated-key (safety-val raw-result "LastEvaluatedKey")))
+                   (if (and (not without-continue) (or (not limit) with-continue) last-evaluated-key)
+                       (apply #'select-dyna table
+                              (append (when where-clause (list where-clause))
+                                      (list :queryable queryable
+                                            :last-result (append last-result result)
+                                            :start-key last-evaluated-key
+                                            :with-continue t
+                                            :limit limit
+                                            :use-query (or use-query queryable)
+                                            :segment segment
+                                            :segments segments)))
+                       (values (mapcar #'(lambda (item)
+                                           (build-dyna-table-obj table item))
+                                       (append last-result result))
+                               raw-result))))))
+        (if (and (not queryable) segments)
+            (if segment
+                (get-result segment)
+                (loop for i from 0 below segments
+                      for result = (get-result i)
+                      when result nconc result))
+            (get-result))))))
 
-(defun scan-dyna (table where-clause &key start-key limit)
+(defun scan-dyna (table where-clause &key start-key limit segment segments)
   (multiple-value-bind (expression filter-attr-names attr-values)
       (when where-clause (to-filter-expression where-clause table))
     (multiple-value-bind (projection projection-attr-names) (table-projection-expression table)
@@ -384,7 +400,9 @@
             :projection-expression projection
             :filter-expression expression
             :expression-attribute-names (append filter-attr-names projection-attr-names)
-            :expression-attribute-values attr-values))))
+            :expression-attribute-values attr-values
+            :segment segment
+            :total-segments segments))))
 
 (defun query-dyna (table where-clause &key start-key limit)
   (multiple-value-bind (key-conditions index-name filter-expression filter-attr-names attr-values)

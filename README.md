@@ -181,11 +181,15 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
 
 (selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB"))) :limit 1)
 ;; => (#<THREAD >)
+
+(select-dyna 'thread :segments 4)
+;; => (#<THREAD > <#THREAD >)
 ```
   - returns the list of objects.
   - can handle [Extended Where Clause](#extended-where-clause) of SxQL.
   - can handle `LastEvaluatedKey` in the response.
   - `:limit` can restrict the number of results.
+  - `:segments` can make `scan` request divided.
 
 ### save-dyna
 ```Lisp
