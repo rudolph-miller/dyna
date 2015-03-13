@@ -552,6 +552,10 @@
       '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
       "with where-clause with :begins-with.")
 
+  (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:contains :forum-name "Amazon"))))
+      '("Amazon RDS" "Amazon DynamoDB" "Amazon DynamoDB")
+      "with where-clause with :contains.")
+
   (is (mapcar #'thread-forum-name (select-dyna 'thread (where (:and (:= :forum-name "Amazon DynamoDB")
                                                                     (:= :subject "Really useful")))))
       '("Amazon DynamoDB")

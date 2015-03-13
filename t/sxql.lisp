@@ -77,6 +77,9 @@
     
     (ok (not (queryable-op-p (where (:begins-with :forum-name "Amazon")) table))
         "NIL with :begins-with")
+
+    (ok (not (queryable-op-p (where (:contains :forum-name "Amazon")) table))
+        "NIL with :contains")
     
     (ok (not (queryable-op-p (where (:or (:= :forum-name "Amazon DynamoDB")
                                          (:= :subject "Really useful")))
@@ -122,7 +125,7 @@
                  "#filter0 IN (:filter0,:filter1)"
                  (("#filter0" . "Subject"))
                  ((":filter0" . "AWS") (":filter1" . "Really scalable")))
-               "with not queryable op.")
+               "with :in.")
 
     (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
                                                (:list= :tags '("Easy" "Scalable"))))
@@ -147,6 +150,16 @@
                   ("Subject" . (("AttributeValueList" . ("AWS")) ("ComparisonOperator" . "BEGINS_WITH"))))
                  nil)
                "with :begins-with.")
+
+    (is-values (to-key-conditions (where (:and (:= :forum-name "Amazon RDS")
+                                               (:contains :subject "AWS")))
+                                  table)
+               '((("ForumName" . (("AttributeValueList" . ("Amazon RDS")) ("ComparisonOperator" . "EQ"))))
+                 nil
+                 "contains(#filter0, :filter0)"
+                 (("#filter0" . "Subject"))
+                 ((":filter0" . "AWS")))
+               "with :contains.")
 
     (is-values (to-key-conditions (where (:= :forum-name "Amazon RDS"))
                                   table)
@@ -253,6 +266,12 @@
                  (("#filter0" . "ForumName"))
                  ((":filter0" . "Amazon")))
                "with :begins-with.")
+
+    (is-values (to-filter-expression (where (:contains :forum-name "Amazon")) table)
+               '("contains(#filter0, :filter0)"
+                 (("#filter0" . "ForumName"))
+                 ((":filter0" . "Amazon")))
+               "with :contains.")
 
     (is-values (to-filter-expression (where (:and (:= :forum-name "Amazon DynamoDB")
                                                   (:= :subject "Really useful")))

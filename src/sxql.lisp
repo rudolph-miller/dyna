@@ -57,6 +57,7 @@
 (defin-sxql-op :list= infix-list-op)
 (defin-sxql-op :between infix-list-op)
 (defin-sxql-op :begins-with infix-op)
+(defin-sxql-op :contains infix-op)
 
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
@@ -182,6 +183,9 @@
                (begins-with-op (format nil "begins_with(~a, ~a)"
                                        (find-attr-name (car (op-keys exp table)))
                                        (find-attr-value (car (op-values exp table)))))
+               (contains-op (format nil "contains(~a, ~a)"
+                                    (find-attr-name (car (op-keys exp table)))
+                                    (find-attr-value (car (op-values exp table)))))
                (infix-op (format nil "~a ~a ~a"
                                  (find-attr-name (car (op-keys exp table)))
                                  (infix-op-name exp)
