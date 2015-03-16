@@ -35,7 +35,6 @@
   (:method ((table <dyna-table-class>))
     (if (find (table-name table) (list-tables (table-dyna table)) :test #'equal)
         t nil)))
-    
 
 @export
 (defgeneric describe-dyna (table)
@@ -60,10 +59,11 @@
            (throughput (val table-definition "ProvisionedThroughput"))
            (lsis (safety-val table-definition "LocalSecondaryIndexes"))
            (gsis (safety-val table-definition "GlobalSecondaryIndexes")))
+      (unless (equal-lsi-p lsis table)
+        (error '<dyna-changing-lsi-error>))
       (unless (and (equal-key-schema-p key-schema table)
                    (equal-attr-types-p attr-definitions table)
                    (equal-throughput-p throughput table)
-                   (equal-lsi-p lsis table)
                    (equal-gsi-p gsis table))
         (error '<dyna-incompatible-table-schema> :table (table-name table)))
       (setf (table-synced table) t))))

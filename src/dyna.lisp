@@ -1,16 +1,12 @@
 (in-package :cl-user)
 (defpackage dyna
-  (:use :cl
-        :jsown
-        :dyna.error
-        :dyna.util
-        :dyna.content)
+  (:use :cl)
   (:import-from :dyna.error
                 :<dyna-error>
                 :<dyna-request-error>
                 :<dyna-incomplete-argumet-error>
-                :<dyna-incomplete-argumet-error>
-                :<dyna-unsupported-op-erorr>)
+                :<dyna-incompatible-table-schema>
+                :<dyna-changing-lsi-error>)
   (:import-from :dyna.structure
                 :make-dyna
                 :dyna
@@ -49,7 +45,7 @@
            :<dyna-request-error>
            :<dyna-incomplete-argumet-error>
            :<dyna-incompatible-table-schema>
-           :<dyna-unsupported-op-erorr>
+           :<dyna-changing-lsi-error>
 
            ;; Structure
            :dyna

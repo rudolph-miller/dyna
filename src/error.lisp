@@ -53,9 +53,18 @@
              (slot-value condition 'table)))))
 
 @export
-(define-condition <dyna-unsupported-op-erorr> (<dyna-error>)
+(define-condition <dyna-unsupported-op-error> (<dyna-error>)
   ((op :initarg :op))
   (:report
    (lambda (condition stream)
      (format stream "Unsupported operation: ~a"
              (slot-value condition 'op)))))
+
+
+@export
+(define-condition <dyna-changing-lsi-error> (<dyna-error>)
+  ()
+  (:report
+   (lambda (condition stream)
+     (declare (ignore condition))
+     (format stream "Changing Local Secondary Index is not allowed in DynamoDB itself."))))

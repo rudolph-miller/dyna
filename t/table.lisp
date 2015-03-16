@@ -65,11 +65,11 @@
 
   (is (table-name table2)
       "thread2"
-      "without :table-name")
+      "without :table-name.")
 
   (is (table-throughput table)
       '(:write 5 :read 5)
-      "can handle :throughput")
+      "can handle :throughput.")
 
   (is (attr-name (table-hash-key table))
       "ForumName"
@@ -77,7 +77,7 @@
 
   (is (attr-name (table-hash-key table2))
       "forum-name"
-      "without :attr-name")
+      "without :attr-name.")
 
   (is (attr-type (table-hash-key table))
       "S"
@@ -90,7 +90,8 @@
 
   (subtest "table-hash-keys"
     (is (mapcar #'attr-name (table-hash-keys table))
-        '("ForumName" "Subject")))
+        '("ForumName" "Subject")
+        "can return hash-keys of the table."))
 
   (subtest "table-range-key"
     (is (attr-name (table-range-key table))

@@ -80,9 +80,14 @@
                  :attr-name "ForumName"
                  :attr-type :S
                  :initarg :forum-name
-                 :accessor thread-forum-name))
+                 :accessor thread-forum-name)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (is-error (ensure-table-synced (find-class 'thread))
@@ -98,9 +103,14 @@
      (subject :key-type :range
               :attr-name "Subject"
               :initarg :subject
-              :accessor thread-subject))
+              :accessor thread-subject)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (is-error (ensure-table-synced (find-class 'thread))
@@ -118,10 +128,15 @@
               :attr-name "Subject"
               :attr-type :S
               :initarg :subject
-              :accessor thread-subject))
+              :accessor thread-subject)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 1 :write 1))
+    (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
   (is-error (ensure-table-synced (find-class 'thread))
@@ -139,14 +154,18 @@
               :attr-name "Subject"
               :attr-type :S
               :initarg :subject
-              :accessor thread-subject))
+              :accessor thread-subject)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
     (:throuput (:read 5 :write 5))
     (:metaclass <dyna-table-class>))
 
   (is-error (ensure-table-synced (find-class 'thread))
-            '<dyna-incompatible-table-schema>
+            '<dyna-changing-lsi-error>
             "can raise the error with the incompatible lsi.")
 
   (setf (find-class 'thread) nil)
