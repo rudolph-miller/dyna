@@ -60,7 +60,8 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
   - `make-dyna` creates `dyna` object.
   - `:credentials` is a dotted pair of AccessKey and SecretKey.
   - `:region` is a region of your DynamoDB.
-  - If you want to access you local DynamoDB Local, you can setup `:region "local"` and `(setf *local-port* 8000)`.
+  - If you want to access you local DynamoDB Local,  
+  you can setup `:region "local"` and `(setf *local-port* 8000)`.
 
 ### <dyna-table-class>
 ```Lisp
@@ -85,7 +86,7 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
                         :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:throughput (:read 5 :wirte 5)
+  (:throughput (:read 1 :wirte 1)
   (:lsi lat-post-date-time)
   (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
@@ -102,18 +103,24 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
             :initarg :subject
             :accessor thread-subject))
   (:dyna *dyna*)
-  (:throughput (:read 5 :wirte 5)
   (:metaclass <dyna-table-class>))
 ```
   - You can create class haveing <dyna-table-class> as `:metaclass`.
   - `:dyna` can take `dyna` object.
-  - `:table-name` can take table name of DynamoDB's table.(Optional.)
-  - `:throughput` is the provisioned throughput of the table.
+  - `:table-name` can take table name of DynamoDB's table. (Optional)
+  - `:throughput` is the ProvisionedThroughput of the table. (Optional)
+  - You can create table without `:throughput`,  
+  then the first value of ProvisionedThroughput will be `*default-throughput*`,  
+  and you can adjust ProvisionedThroughput with AWS Console.
   - `:lsi` is columns of LocalSecondaryIndexes.
   - `:gsi` is columns of GlobalSecondaryIndexes.
+  - You can create `:gsi` without `:read` nor `:write`,  
+  then the first value of ProvisionedThroughput in GlobalSecondaryIndexes will be  
+  `*default-throughput*`, and you can adjust ProvisionedThroughput with AWS Console.
   - `:key-type` in slot should be `:hash` or `:range` and is the same as DynamoDB's table.
-  - `:attr-name` in slot is AttributeName of Item in DynamoDB's table.(Optional.)
-  - `:attr-type` in slot is AttributeType of Item in DynamoDB's table.(Optional without key attributes.)
+  - `:attr-name` in slot is AttributeName of Item in DynamoDB's table. (Optional)
+  - `:attr-type` in slot is AttributeType of Item in DynamoDB's table. (Optional)
+  - You must attach `:attr-type` with Attributes used in Indexes.
 
 ### create-dyna-table
 ```Lisp
@@ -179,7 +186,12 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
 (selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB"))))
 ;; => (#<THREAD > #<THREAD >)
 
-(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB"))) :limit 1)
+(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB")))
+                    :limit 1)
+;; => (#<THREAD >)
+
+(selet-dyna 'thread (where (:in :forum-name '("Amazon S3" "Amazon DynamoDB")))
+                    (limit 1))
 ;; => (#<THREAD >)
 
 (select-dyna 'thread :segments 4)
@@ -189,11 +201,13 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
   - can handle [Extended Where Clause](#extended-where-clause) of SxQL.
   - can handle `LastEvaluatedKey` in the response.
   - `:limit` can restrict the number of results.
+  - can handle Limit Clause of SxQL.
   - `:segments` can make `scan` request divided.
 
 ### save-dyna
 ```Lisp
-(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB" :subject "Really useful"))
+(save-dyna (make-instance 'thread :forum-name "Amazon DynamoDB"
+                                  :subject "Really useful"))
 ;; =>
 ```
   - can return T if the object is successfully saved.
@@ -356,13 +370,14 @@ Most Low Level API return multiple values, the formaer is formatted result, and 
 
 ### query
 ```Lisp
-(query dyna :table-name "Thread"
-            :select "SPECIFIC_ATTRIBUTES"
-            :attributes-to-get '("ForumName" "Subject")
-            :limit 3
-            :key-conditions '(("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
-                                              ("ComparisonOperator" . "EQ"))))
-            :return-consumed-capacity "TOTAL")
+(query dyna
+       :table-name "Thread"
+       :select "SPECIFIC_ATTRIBUTES"
+       :attributes-to-get '("ForumName" "Subject")
+       :limit 3
+       :key-conditions '(("ForumName" . (("AttributeValueList" . ("Amazon DynamoDB"))
+                                         ("ComparisonOperator" . "EQ"))))
+       :return-consumed-capacity "TOTAL")
 ;; => ((("ForunName" . "Amazon DynamoDB") ("Subject" . "Concurrent reads")))
 ```
   - returns list of alists.
