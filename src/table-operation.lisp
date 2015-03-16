@@ -25,7 +25,8 @@
 
 (syntax:use-syntax :annot)
 
-(defvar *retry-count-table* (make-hash-table :test #'equal))
+@export
+(defvar *default-throughput* 1)
 
 @export
 (defgeneric table-exist-p (table)
@@ -105,8 +106,9 @@
                              (equal (attr-type slot) (find-attr-type (attr-name slot)))))))))
 
 (defun equal-throughput-p (schema table)
-  (and (= (val schema "ReadCapacityUnits") (getf (table-throughput table) :read))
-       (= (val schema "WriteCapacityUnits") (getf (table-throughput table) :write))))
+  (or (not (table-throughput table))
+      (and (= (val schema "ReadCapacityUnits") (getf (table-throughput table) :read))
+           (= (val schema "WriteCapacityUnits") (getf (table-throughput table) :write)))))
 
 (defun equal-lsi-p (lsis table)
   (let ((lsi-attr-names (mapcar #'attr-name (table-lsi table))))
@@ -152,8 +154,10 @@
                              (write (val throughput "WriteCapacityUnits"))
                              (table-gsi (get-table-gsi table gsi)))
                         (and table-gsi
-                             (= read (getf table-gsi :read))
-                             (= write (getf table-gsi :write))))))))
+                             (or (not (getf table-gsi :read))
+                                 (= read (getf table-gsi :read)))
+                             (or (not (getf table-gsi :write))
+                                 (= write (getf table-gsi :write)))))))))
 
 (defun build-dyna-table-obj (table result)
   (when result
@@ -186,8 +190,8 @@
 
 (defun provisioned-throughput (table)
   (let ((throughput (table-throughput table)))
-    `(("ReadCapacityUnits" . ,(getf throughput :read))
-      ("WriteCapacityUnits" . ,(getf throughput :write)))))
+    `(("ReadCapacityUnits" . ,(or (getf throughput :read) *default-throughput*))
+      ("WriteCapacityUnits" . ,(or (getf throughput :write) *default-throughput*)))))
 
 @export
 (defgeneric create-dyna-table (table)
@@ -215,8 +219,8 @@
         :global-secondary-indexes (mapcar #'(lambda (gsi)
                                               (let ((hash (getf gsi :hash))
                                                     (range (getf gsi :range))
-                                                    (read (getf gsi :read))
-                                                    (write (getf gsi :write)))
+                                                    (read (or (getf gsi :read) *default-throughput*))
+                                                    (write (or (getf gsi :write) *default-throughput*)))
                                                 `(("IndexName" . ,(gsi-to-index-name gsi))
                                                   ("KeySchema" . ,(append `((("AttributeName" . ,(attr-name hash))
                                                                              ("KeyType" . "HASH")))

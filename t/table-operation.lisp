@@ -41,7 +41,7 @@
                         :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:throuput (:read 4 :write 5))
+  (:throughput (:read 4 :write 5))
   (:lsi last-post-date-time)
   (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
@@ -135,7 +135,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 1 :write 1))
+    (:throughput (:read 1 :write 1))
     (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
@@ -161,7 +161,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 5))
+    (:throughput (:read 5 :write 5))
     (:metaclass <dyna-table-class>))
 
   (is-error (ensure-table-synced (find-class 'thread))
@@ -186,7 +186,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 5))
+    (:throughput (:read 5 :write 5))
     (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
@@ -216,7 +216,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 5))
+    (:throughput (:read 5 :write 5))
     (:lsi last-post-date-time)
     (:gsi (:hash owner :read 5 :write 5))
     (:metaclass <dyna-table-class>))
@@ -225,7 +225,66 @@
       "can return T if the table schema is correct.")
 
   (ok (table-synced (find-class 'thread))
-      "Slot %synced is now T."))
+      "Slot %synced is now T.")
+
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S
+            :initarg :owner
+            :accessor thread-owner)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 5))
+    (:metaclass <dyna-table-class>))
+
+  (ok (ensure-table-synced (find-class 'thread))
+      "can return T without :throughput.")
+
+  (setf (find-class 'thread) nil)
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S
+            :initarg :owner
+            :accessor thread-owner)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:throughput (:read 5 :write 5))
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner))
+    (:metaclass <dyna-table-class>))
+
+  (ok (ensure-table-synced (find-class 'thread))
+      "can return T without throughput of :gsi."))
 
 (setf (find-class 'thread) nil)
 (defclass thread ()
@@ -249,7 +308,7 @@
                         :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:throuput (:read 5 :write 5))
+  (:throughput (:read 5 :write 5))
   (:lsi last-post-date-time)
   (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))
@@ -291,7 +350,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 5))
+    (:throughput (:read 5 :write 5))
     (:lsi last-post-date-time)
     (:gsi (:hash owner :read 5 :write 5))
     (:metaclass <dyna-table-class>))
@@ -318,7 +377,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 3))
+    (:throughput (:read 5 :write 3))
     (:lsi last-post-date-time)
     (:gsi (:hash owner :read 5 :write 5))
     (:metaclass <dyna-table-class>))
@@ -345,7 +404,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 3))
+    (:throughput (:read 5 :write 3))
     (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
@@ -373,7 +432,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 3))
+    (:throughput (:read 5 :write 3))
     (:lsi last-post-date-time)
     (:gsi (:hash owner :read 5 :write 5))
     (:metaclass <dyna-table-class>))
@@ -402,13 +461,80 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 3))
+    (:throughput (:read 5 :write 3))
     (:lsi last-post-date-time)
     (:gsi (:hash owner :read 5 :write 1))
     (:metaclass <dyna-table-class>))
 
   (ok (migrate-dyna-table 'thread)
-      "can update the table if gsi is changed at throughput."))
+      "can update the table if gsi is changed at throughput.")
+
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner :read 5 :write 1))
+    (:metaclass <dyna-table-class>))
+
+  (delete-table *dyna* :table-name "Thread")
+  (ok (migrate-dyna-table 'thread)
+      "without :throughput.")
+
+  (let ((throughput (filter (describe-dyna 'thread) "Table" "ProvisionedThroughput")))
+    (is (list (val throughput "ReadCapacityUnits")
+              (val throughput "WriteCapacityUnits"))
+        (list *default-throughput* *default-throughput*)
+        "can set *default-throughput* as :read and :write in :throughput."))
+
+  (defclass thread ()
+    ((forum-name :key-type :hash
+                 :attr-name "ForumName"
+                 :attr-type :S
+                 :initarg :forum-name
+                 :accessor thread-forum-name)
+     (subject :key-type :range
+              :attr-name "Subject"
+              :attr-type :S
+              :initarg :subject
+              :accessor thread-subject)
+     (owner :attr-name "Owner"
+            :attr-type :S)
+     (last-post-date-time :attr-name "LastPostDateTime"
+                          :attr-type :S
+                          :initarg :last-post-date-time
+                          :accessor thread-last-post-date-time))
+    (:dyna *dyna*)
+    (:table-name "Thread")
+    (:lsi last-post-date-time)
+    (:gsi (:hash owner))
+    (:metaclass <dyna-table-class>))
+
+  (delete-table *dyna* :table-name "Thread")
+  (ok (migrate-dyna-table 'thread)
+      "without throughput of :gsi.")
+
+  (let ((throughput (car (filter (describe-dyna 'thread) "Table" "GlobalSecondaryIndexes" map "ProvisionedThroughput"))))
+    (is (list (val throughput "ReadCapacityUnits")
+              (val throughput "WriteCapacityUnits"))
+        (list *default-throughput* *default-throughput*)
+        "can set *default-throughput* as :read and :write in throughput of :gsi.")))
+
 
 (subtest "delete-dyna-table"
   (ok (table-exist-p 'thread)
@@ -447,7 +573,7 @@
                           :accessor thread-last-post-date-time))
     (:dyna *dyna*)
     (:table-name "Thread")
-    (:throuput (:read 5 :write 3))
+    (:throughput (:read 5 :write 3))
     (:lsi last-post-date-time)
     (:metaclass <dyna-table-class>))
 
@@ -510,7 +636,7 @@
                         :accessor thread-last-post-date-time))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:throuput (:read 5 :write 5))
+  (:throughput (:read 5 :write 5))
   (:lsi last-post-date-time owner)
   (:gsi (:hash owner :read 5 :write 5))
   (:metaclass <dyna-table-class>))

@@ -33,6 +33,7 @@
                 :<dyna-table-class>
                 :<dyna-class>)
   (:import-from :dyna.table-operation
+                :*default-throughput*
                 :describe-dyna
                 :migrate-dyna-table
                 :recreate-dyna-table
@@ -77,6 +78,7 @@
            :<dyna-class>
 
            ;; Table Operation
+           :*default-throughput*
            :describe-dyna
            :migrate-dyna-table
            :recreate-dyna-table

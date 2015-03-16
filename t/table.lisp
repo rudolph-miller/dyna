@@ -28,9 +28,9 @@
       (:dyna (make-dyna :credentials (cons "DYNA_TEST_ACCESS_KEY" "DYNA_TEST_SECRET_KEY")
                         :region "local"))
       (:table-name "Thread")
-      (:throuput (:write 5 :read 5))
+      (:throughput (:write 5 :read 5))
       (:lsi last-post-date-time)
-      (:gsi (:hash subject :range last-post-date-time))
+      (:gsi (:hash subject :range last-post-date-time :read 5 :write 5))
       (:metaclass <dyna-table-class>))
     "can create class having <dyna-table-class> as metaclass.")
 
@@ -45,9 +45,23 @@
                 :initarg :subject))
       (:dyna (make-dyna :credentials (cons "DYNA_TEST_ACCESS_KEY" "DYNA_TEST_SECRET_KEY")
                         :region "local"))
-      (:throuput (:write 5 :read 5))
+      (:throughput (:write 5 :read 5))
       (:metaclass <dyna-table-class>))
     "can create class having <dyna-table-class> as metaclass without :table-name.")
+
+(ok (defclass thread3 ()
+      ((forum-name :key-type :hash
+                   :attr-name "ForumName"
+                   :attr-type :S
+                   :initarg :forum-name)
+       (last-post-date-time :attr-name "LastPostDateTime"
+                            :attr-type :S
+                            :initarg :last-post-date-time))
+      (:dyna (make-dyna :credentials (cons "DYNA_TEST_ACCESS_KEY" "DYNA_TEST_SECRET_KEY")
+                        :region "local"))
+      (:gsi (:hash subject :range last-post-date-time))
+      (:metaclass <dyna-table-class>))
+    "can create class having without :throughput.")
 
 (let ((table (find-class 'thread))
       (table2 (find-class 'thread2)))

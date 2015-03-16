@@ -108,7 +108,7 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
   - You can create class haveing <dyna-table-class> as `:metaclass`.
   - `:dyna` can take `dyna` object.
   - `:table-name` can take table name of DynamoDB's table.(Optional.)
-  - `:throughput` is the provisioned throuput of the table.
+  - `:throughput` is the provisioned throughput of the table.
   - `:lsi` is columns of LocalSecondaryIndexes.
   - `:gsi` is columns of GlobalSecondaryIndexes.
   - `:key-type` in slot should be `:hash` or `:range` and is the same as DynamoDB's table.

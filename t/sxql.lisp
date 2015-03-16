@@ -37,7 +37,7 @@
          :accessor thread-tags))
   (:dyna *dyna*)
   (:table-name "Thread")
-  (:throuput (:read 5 :write 5))
+  (:throughput (:read 5 :write 5))
   (:lsi last-post-date-time tags)
   (:gsi (:hash owner :range last-post-date-time :read 5 :write 5))
   (:metaclass <dyna-table-class>))
