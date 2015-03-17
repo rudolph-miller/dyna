@@ -23,7 +23,7 @@
 (defclass <dyna-table-class> (standard-class)
   ((table-name :type (or cons string) :initarg :table-name)
    (dyna :type (or cons dyna) :initarg :dyna :accessor table-dyna)
-   (throughput :type cons :initarg :throughput :accessor table-throughput :initform nil)
+   (throughput :type (or null cons) :initarg :throughput :accessor table-throughput :initform nil)
    (lsi :type (or null cons) :initarg :lsi :accessor table-lsi :initform nil)
    (gsi :type (or null cons) :initarg :gsi :accessor table-gsi :initform nil)
    (%synced :type boolean :initform nil :accessor table-synced)))
