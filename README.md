@@ -49,6 +49,12 @@ Dyna is an AWS DynamoDB ORM for Common Lisp.
 ;; => (("Name" . "LispAlien") ("Feature" . "They talk Lisp."))
 ```
 
+## Installasion
+
+```Lisp
+(ql:quickload :dyna)
+```
+
 ## API
 
 ### dyna
