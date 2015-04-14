@@ -96,12 +96,6 @@
   (initialize-around-action instance initargs)
   (apply #'call-next-method instance initargs))
 
-(defmethod initialize-instance :after ((instance <dyna-table-class>) &rest initargs)
-  (initialize-after-action instance initargs))
-
-(defmethod reinitialize-instance :after ((instance <dyna-table-class>) &rest initargs)
-  (initialize-after-action instance initargs))
-
 (defmethod validate-superclass ((class <dyna-table-class>) (super standard-class))
   t)
 

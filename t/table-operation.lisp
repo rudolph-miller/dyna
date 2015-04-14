@@ -533,7 +533,42 @@
     (is (list (val throughput "ReadCapacityUnits")
               (val throughput "WriteCapacityUnits"))
         (list *default-throughput* *default-throughput*)
-        "can set *default-throughput* as :read and :write in throughput of :gsi.")))
+        "can set *default-throughput* as :read and :write in throughput of :gsi."))
+
+  (delete-table *dyna* :table-name "Thread")
+
+  (let ((*auto-migration-mode* t))
+    (defclass thread ()
+      ((forum-name :key-type :hash
+                   :attr-name "ForumName"
+                   :attr-type :S
+                   :initarg :forum-name
+                   :accessor thread-forum-name)
+       (subject :key-type :range
+                :attr-name "Subject"
+                :attr-type :S
+                :initarg :subject
+                :accessor thread-subject)
+       (tags :attr-name "Tags"
+             :initarg :tags
+             :accessor thread-tags)
+       (owner :attr-name "Owner"
+              :attr-type :S
+              :initarg :onwer
+              :accessor thread-owner)
+       (last-post-date-time :attr-name "LastPostDateTime"
+                            :attr-type :S
+                            :initarg :last-post-date-time
+                            :accessor thread-last-post-date-time))
+      (:dyna *dyna*)
+      (:table-name "Thread")
+      (:throughput (:read 5 :write 5))
+      (:lsi last-post-date-time)
+      (:gsi (:hash owner :read 5 :write 5))
+      (:metaclass <dyna-table-class>)))
+
+  (ok (table-exist-p 'thread)
+      "can automatically migrate table when (eql *auto-migration-mode* t)."))
 
 
 (subtest "delete-dyna-table"

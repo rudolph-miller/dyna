@@ -26,6 +26,9 @@
 (syntax:use-syntax :annot)
 
 @export
+(defvar *auto-migration-mode* nil)
+
+@export
 (defvar *default-throughput* 1)
 
 @export
@@ -182,6 +185,16 @@
     (if (table-exist-p table)
         (update-dyna-table table)
         (create-dyna-table table))))
+
+(defmethod initialize-instance :after ((instance <dyna-table-class>) &rest initargs)
+  (dyna.table::initialize-after-action instance initargs)
+  (when *auto-migration-mode*
+    (migrate-dyna-table instance)))
+
+(defmethod reinitialize-instance :after ((instance <dyna-table-class>) &rest initargs)
+  (dyna.table::initialize-after-action instance initargs)
+  (when *auto-migration-mode*
+    (migrate-dyna-table instance)))
 
 (defun attribute-definitions (table)
   (loop for slot in (table-should-define-slots table)

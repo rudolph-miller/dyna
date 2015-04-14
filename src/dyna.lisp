@@ -33,6 +33,7 @@
                 :<dyna-table-class>
                 :<dyna-class>)
   (:import-from :dyna.table-operation
+                :*auto-migration-mode*
                 :*default-throughput*
                 :describe-dyna
                 :migrate-dyna-table
@@ -78,6 +79,7 @@
            :<dyna-class>
 
            ;; Table Operation
+           :*auto-migration-mode*
            :*default-throughput*
            :describe-dyna
            :migrate-dyna-table
