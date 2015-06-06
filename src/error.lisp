@@ -16,7 +16,7 @@
   (:report
    (lambda (condition stream)
      (format stream
-             "Error occured in request.~%Sattus:~a~%Messssage: ~a~%Meta: ~a."
+             "Error occured in request.~%Status: ~a~%Messssage: ~a~%Meta: ~a."
              (slot-value condition 'status)
              (slot-value condition 'message)
              (let ((meta (slot-value condition 'meta)))
