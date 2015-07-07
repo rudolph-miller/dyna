@@ -11,6 +11,7 @@
 (defsystem dyna-test
   :author "Rudolph-Miller"
   :license "MIT"
+  :description "Tests of Dyna."
   :depends-on (:dyna
                :prove
                :local-time)
