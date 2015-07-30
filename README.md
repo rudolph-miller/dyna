@@ -1,6 +1,7 @@
 # Dyna
 
 [![Build Status](https://travis-ci.org/Rudolph-Miller/dyna.svg)](https://travis-ci.org/Rudolph-Miller/dyna)
+[![Quicklisp dist](http://quickdocs.org/badge/dyna.svg)](http://quickdocs.org/dyna/)
 
 Dyna is an AWS DynamoDB ORM for Common Lisp.
 
