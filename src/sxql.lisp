@@ -48,17 +48,17 @@
 
 (syntax:use-syntax :annot)
 
-(defmacro defin-sxql-op (sym type)
+(defmacro define-sxql-op (sym type)
   `(progn
-     (define-op (,sym ,type))
+     (define-op (,sym ,type :package :dyna.sxql))
      (import (symbolicate ,sym '-op) (find-package 'sxql.operator))
      (import (symbolicate 'make- ,sym '-op) (find-package 'sxql.operator))))
 
-(defin-sxql-op :list= infix-list-op)
-(defin-sxql-op :list-in infix-list-op)
-(defin-sxql-op :between infix-list-op)
-(defin-sxql-op :begins-with infix-op)
-(defin-sxql-op :contains infix-op)
+(define-sxql-op :list= infix-list-op)
+(define-sxql-op :list-in infix-list-op)
+(define-sxql-op :between infix-list-op)
+(define-sxql-op :begins-with infix-op)
+(define-sxql-op :contains infix-op)
 
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
