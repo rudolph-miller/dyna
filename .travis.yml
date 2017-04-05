@@ -12,7 +12,7 @@ install:
 
   # Install dynamodb-local.
   - mkdir /tmp/dynamodb
-  - wget -O - http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest | tar xz --directory /tmp/dynamodb
+  - wget -O - http://s3-us-west-2.amazonaws.com/dynamodb-local/dynamodb_local_latest.tar.gz | tar xz --directory /tmp/dynamodb
 
 before_script:
   # Start dynamodb-local
