@@ -29,7 +29,8 @@
                                                                content)
                 (cond
                   ((= status 200)
-                   (let ((*result* (parse (octets-to-string result))))
+                   (let ((*result* (parse (octets-to-string result
+							    :external-format :utf-8))))
                      ,@body))
                   (t (error '<dyna-request-error> :status status
                                                   :message (octets-to-string result)
