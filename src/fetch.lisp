@@ -10,6 +10,9 @@
 (defvar *local-port* 8000)
 
 @export
+(defvar *use-ssl* nil)
+
+@export
 (defun fetch (credentials region operation content)
   (let* ((target (concatenate 'string "DynamoDB_20120810." operation))
          (endpoint (if (string= region "local")
@@ -26,7 +29,7 @@
                                                   ("content-type" . ,#'request-content-type)
                                                   ("x-amz-date" . ,#'request-x-amz-date)
                                                   ("x-amz-target" . ,target))))
-         (url (concatenate 'string "http://" (request-endpoint request))))
+         (url (concatenate 'string (if *use-ssl* "https://" "http://") (request-endpoint request))))
     (handler-bind ((dex:http-request-failed (lambda (c)
                                               (declare (ignore c))
                                               (invoke-restart 'dex:ignore-and-continue))))
