@@ -34,6 +34,7 @@
                                               (declare (ignore c))
                                               (invoke-restart 'dex:ignore-and-continue))))
       (dex:post url :headers `((:host . ,(request-host request))
+                               (:content-length . ,(request-content-length request))
                                (:authorization . ,(request-authorization request))
                                (:x-amz-date . ,(request-x-amz-date request))
                                (:x-amz-target . ,target)
