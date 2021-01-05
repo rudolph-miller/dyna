@@ -54,11 +54,12 @@
      (import (symbolicate ,sym '-op) (find-package 'sxql.operator))
      (import (symbolicate 'make- ,sym '-op) (find-package 'sxql.operator))))
 
-(define-sxql-op :list= infix-list-op)
-(define-sxql-op :list-in infix-list-op)
-(define-sxql-op :between infix-list-op)
-(define-sxql-op :begins-with infix-op)
-(define-sxql-op :contains infix-op)
+(cl-package-locks:with-packages-unlocked 'sxql.operator
+  (define-sxql-op :list= infix-list-op)
+  (define-sxql-op :list-in infix-list-op)
+  (define-sxql-op :between infix-list-op)
+  (define-sxql-op :begins-with infix-op)
+  (define-sxql-op :contains infix-op))
 
 (defun op-comparison-name (op)
   (let ((op-name (make-keyword (sql-op-name op))))
