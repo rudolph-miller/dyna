@@ -24,6 +24,7 @@
                                   dyna
                                   args)))
               (multiple-value-bind (result status meta) (fetch (dyna-credentials dyna)
+                                                               (dyna-token dyna)
                                                                (dyna-region dyna)
                                                                op
                                                                content)

@@ -13,7 +13,7 @@
 (defvar *use-ssl* nil)
 
 @export
-(defun fetch (credentials region operation content)
+(defun fetch (credentials token region operation content)
   (let* ((target (concatenate 'string "DynamoDB_20120810." operation))
          (endpoint (if (string= region "local")
                        (format nil "localhost:~d" *local-port*)
@@ -38,5 +38,6 @@
                                (:authorization . ,(request-authorization request))
                                (:x-amz-date . ,(request-x-amz-date request))
                                (:x-amz-target . ,target)
+                               (:X-Amz-Security-Token . ,token)
                                (:content-type . ,(request-content-type request)))
                     :content content))))
