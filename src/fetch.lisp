@@ -38,6 +38,6 @@
                                (:authorization . ,(request-authorization request))
                                (:x-amz-date . ,(request-x-amz-date request))
                                (:x-amz-target . ,target)
-                               (:X-Amz-Security-Token . ,token)
+                               ,(when token (cons :X-Amz-Security-Token token))
                                (:content-type . ,(request-content-type request)))
                     :content content))))

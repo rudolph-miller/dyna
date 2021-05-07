@@ -10,6 +10,5 @@
 @export-accessors
 (defstruct dyna
   (credentials)
-  (token)
+  (token nil)
   (region "us-east-1"))
-
